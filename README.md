@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Van Dinh Land Management System (Hệ thống Hồ sơ Địa chính)
 
-## Getting Started
+Hệ thống quản lý bản đồ số và hồ sơ địa chính nội bộ cho xã Vạn Đình. Được xây dựng theo kiến trúc Local-First.
 
-First, run the development server:
+## Công nghệ sử dụng (Tech Stack)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
+- **Bản đồ (Map)**: MapLibre GL JS
+- **Backend**: Next.js API Routes (Monorepo)
+- **Database**: PostgreSQL với PostGIS extension
+- **ORM**: Prisma (v5.x)
+- **Auth**: iron-session (Cookie-based stateless session)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Yêu cầu hệ thống (Prerequisites)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js (v20+)
+- PostgreSQL (Cài đặt local hoặc server nội bộ)
+- PostGIS Extension (Đã bật trong PostgreSQL)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Hướng dẫn cài đặt (Setup Instructions)
 
-## Learn More
+1. **Cài đặt dependencies**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Cấu hình biến môi trường**
+   Copy file `.env.example` thành `.env` (hoặc tạo file `.env` mới) và cập nhật chuỗi kết nối:
+   ```env
+   DATABASE_URL="postgresql://username:password@localhost:5432/vandinh?schema=public"
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Cập nhật Database Schema**
+   Đồng bộ cấu trúc database từ Prisma schema:
+   ```bash
+   npm run db:push
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Tạo dữ liệu mẫu (Seed Data)**
+   Chạy script seed để tạo tài khoản admin và dữ liệu mẫu ban đầu:
+   ```bash
+   npm run db:seed
+   ```
+   *Tài khoản mặc định: `admin` / `admin123`*
 
-## Deploy on Vercel
+5. **Chạy ứng dụng**
+   ```bash
+   npm run dev
+   ```
+   Mở trình duyệt và truy cập `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tính năng chính (Core Features)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Quản lý tài khoản và phân quyền (Admin / Staff).
+- Hiển thị bản đồ số và thửa đất (Import file GeoJSON/DXF).
+- Tra cứu hồ sơ địa chính.
+- Nhật ký hoạt động (Audit logs).
