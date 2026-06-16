@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Local OpenCode project config (per-user, not shared)
+opencode.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
