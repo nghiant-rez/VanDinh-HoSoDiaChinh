@@ -5,10 +5,10 @@ import { X, ChevronRight, ChevronLeft, Check, Save } from 'lucide-react';
 
 interface StorageItem {
   id: number;
-  tenkho?: str;
-  tenke?: str;
-  tentang?: str;
-  tenhopso?: str;
+  tenkho?: string;
+  tenke?: string;
+  tentang?: string;
+  tenhopso?: string;
   kes?: any[];
   tangs?: any[];
   hop_sos?: any[];

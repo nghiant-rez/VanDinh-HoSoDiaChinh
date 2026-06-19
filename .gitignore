@@ -33,6 +33,17 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# backend uploads
+backend/data/*
+!backend/data/README.md
+!backend/data/sample_parcels.geojson
+
 # vercel
 .vercel
 

@@ -56,7 +56,7 @@ class ThuaDatResponse(BaseModel):
     id: int
     tobando: str
     sothua: str
-    dientich: int
+    dientich: float
 
     class Config:
         from_attributes = True

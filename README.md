@@ -1,6 +1,6 @@
 # Van Dinh Land Management System
 
-**Hệ thống Quản lý Hồ sơ Đất đai Vạn Đình**
+**Hệ thống Quản lý Hồ sơ Đất đai Vân Đình**
 
 Local-first land records and digital map management system for commune-level administration.
 
@@ -33,13 +33,14 @@ This system provides:
 - MapLibre GL (open-source map rendering)
 
 **Backend:**
-- Next.js API Routes
-- PostgreSQL 16+ with PostGIS extension
-- Prisma ORM
+- Python 3.12+ (FastAPI) at localhost:8000
+- PostgreSQL 18+ with PostGIS extension
+- SQLAlchemy ORM
 
 **Authentication:**
 - Iron Session (encrypted cookie-based sessions)
-- bcrypt password hashing
+- bcryptjs (frontend) / bcrypt (backend) password hashing
+- Python FastAPI auth endpoints
 
 ---
 
@@ -48,6 +49,7 @@ This system provides:
 Before you begin, ensure you have:
 
 - **Node.js** 20 or higher ([Download](https://nodejs.org/))
+- **Python** 3.12 or higher ([Download](https://www.python.org/downloads/))
 - **PostgreSQL** 16 or higher with **PostGIS extension** ([Download](https://www.postgresql.org/download/windows/))
 - **npm** (comes with Node.js) or **pnpm**
 
@@ -71,21 +73,29 @@ git clone <your-repo-url>
 cd digital-archive-map-system
 ```
 
-### 2. Install dependencies
+### 2. Install frontend dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
-
-Create a `.env` file from the template:
+### 3. Install backend dependencies
 
 ```bash
-cp .env.example .env
+cd backend
+pip install -r requirements.txt
+cd ..
 ```
 
-Edit `.env` and configure:
+### 4. Configure environment variables
+
+Create a `.env.local` file from the template:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and configure:
 
 ```env
 # Update with your PostgreSQL credentials
@@ -96,7 +106,13 @@ DATABASE_URL="postgresql://your_user:your_password@localhost:5432/vandinh?schema
 SECRET_COOKIE_PASSWORD="your-generated-secret-here"
 ```
 
-### 4. Create the database
+Backend config is read from `backend/.env` — copy and edit:
+
+```bash
+cp .env.example backend/.env
+```
+
+### 5. Create the database
 
 ```bash
 # Using psql or pgAdmin, create the database:
@@ -106,31 +122,24 @@ createdb vandinh
 psql -d vandinh -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 ```
 
-### 5. Initialize database schema
+### 6. Initialize database schema
+
+The schema is auto-created on backend startup via SQLAlchemy. Run the backend once:
 
 ```bash
-# Generate Prisma Client
-npm run db:generate
-
-# Push schema to database
-npm run db:push
+cd backend && uvicorn app.main:app --reload --port 8000
 ```
 
-### 6. Seed initial data
+### 7. Start development servers
 
-```bash
-npm run db:seed
-```
-
-This creates:
-- 2 roles: `ADMIN` and `STAFF`
-- 2 test users (see default accounts below)
-- Sample storage locations
-
-### 7. Start development server
-
+**Terminal 1 — Frontend:**
 ```bash
 npm run dev
+```
+
+**Terminal 2 — Backend:**
+```bash
+cd backend && uvicorn app.main:app --reload --port 8000
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -154,30 +163,45 @@ After seeding, you can log in with:
 
 ```
 digital-archive-map-system/
+├── backend/                   # Python FastAPI backend
+│   ├── app/
+│   │   ├── main.py            # FastAPI app entrypoint
+│   │   ├── config.py          # pydantic-settings
+│   │   ├── database.py        # SQLAlchemy engine + session
+│   │   ├── models.py          # SQLAlchemy models
+│   │   ├── schemas.py         # Pydantic schemas
+│   │   ├── dependencies.py    # get_db, get_current_user, require_roles
+│   │   ├── routers/           # API route handlers
+│   │   └── services/          # Business logic (GIS, OCR)
+│   ├── data/                  # Uploads, temp files
+│   └── requirements.txt
 ├── docs/                       # Documentation
-│   ├── use-case-and-diagrams.md   # Use case specifications
-│   ├── codex-context.md           # AI agent context
-│   └── project-references.md       # Jira/Figma links
-├── prisma/
-│   ├── schema.prisma          # Database schema
-│   └── seed.ts                # Database seed script
+│   ├── README.md                   # Docs index (read first)
+│   ├── architecture.md             # System split, auth flow, DB, GIS
+│   ├── use-cases.md                # UC-01 to UC-10 specifications
+│   ├── feature-ownership.md        # Per-UC owner/files/status
+│   ├── security.md                 # Open security issues
+│   ├── changelog.md                # Dated log of applied fixes
+│   └── references.md               # Jira/Figma links
 ├── src/
 │   ├── app/                   # Next.js App Router
 │   │   ├── (dashboard)/       # Protected dashboard routes
-│   │   ├── api/               # API routes
+│   │   ├── api/               # API routes (Next.js, proxying to FastAPI)
 │   │   ├── login/             # Login page
 │   │   ├── layout.tsx         # Root layout
 │   │   └── globals.css        # Global styles + design tokens
 │   ├── components/
 │   │   ├── layout/            # Layout components (Sidebar, Header, AppShell)
 │   │   ├── map/               # Map components (MapView, MapToolsPanel, MapLegend)
+│   │   ├── storage/           # Storage explorer components
 │   │   └── ui/                # Reusable UI components
 │   └── lib/
 │       ├── auth.ts            # Auth helpers (requireAuth, requireAdmin)
-│       ├── prisma.ts          # Prisma client singleton
 │       └── session.ts         # Iron Session configuration
 ├── .env.example               # Environment variables template
 ├── AGENTS.md                  # AI agent guidelines
+├── CLAUDE.md                  # AI agent pointer
+├── Db/                        # Full database schema reference
 └── README.md                  # This file
 ```
 
@@ -187,13 +211,11 @@ digital-archive-map-system/
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server (http://localhost:3000) |
-| `npm run build` | Build for production |
+| `npm run dev` | Start frontend dev server (http://localhost:3000) |
+| `npm run build` | Build frontend for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm run db:generate` | Generate Prisma Client |
-| `npm run db:push` | Push schema changes to database |
-| `npm run db:seed` | Seed database with initial data |
+| `cd backend && uvicorn app.main:app --reload --port 8000` | Start Python FastAPI backend |
 
 ---
 
@@ -214,7 +236,7 @@ The system implements 10 use cases (UC-01 to UC-10):
 | UC-09 | Scan vs map comparison | 📋 Planned |
 | UC-10 | System activity monitoring | ⚠️ Partial |
 
-See [docs/use-case-and-diagrams.md](./docs/use-case-and-diagrams.md) for detailed specifications.
+See [docs/use-cases.md](./docs/use-cases.md) for detailed specifications.
 
 ---
 
@@ -262,18 +284,22 @@ The `output: 'standalone'` configuration in `next.config.ts` creates a self-cont
 
 ## 📖 Documentation
 
-- **[Use Cases & Specifications](./docs/use-case-and-diagrams.md)** - Detailed use case documentation
-- **[Project References](./docs/project-references.md)** - Jira board and Figma links
+- **[Docs Index](./docs/README.md)** - Start here for the doc map
+- **[Use Cases & Specifications](./docs/use-cases.md)** - Detailed use case documentation
+- **[Architecture](./docs/architecture.md)** - System split, auth flow, database, GIS
+- **[Feature Ownership](./docs/feature-ownership.md)** - Per-UC owner/files/status
+- **[Security](./docs/security.md)** - Open security issues and fix plan
+- **[References](./docs/references.md)** - Jira board and Figma links
 - **[Agent Guidelines](./AGENTS.md)** - AI coding agent instructions
-- **[Codex Context](./docs/codex-context.md)** - Historical context and decisions
 
 ---
 
 ## ⚠️ Known Issues
 
 1. **Next.js 16 Middleware Deprecation Warning** - `middleware.ts` should be migrated to `proxy.ts` convention
-2. **PostGIS Geometry Column** - Manual migration needed for `parcels.geometry` column (see line 66 in `prisma/schema.prisma`)
+2. **PostGIS Geometry Column** - Manual migration needed for `parcels.geometry` column — the GIS module currently uses in-memory caching instead of PostGIS
 3. **API Placeholder Routes** - 7 API routes need full implementation (users, records, parcels, maps, logs, exports)
+4. **OCR not yet implemented** - PaddleOCR dependency is listed in `requirements.txt` but the OCR router and service are not yet built
 
 ---
 
@@ -306,6 +332,6 @@ The `output: 'standalone'` configuration in `next.config.ts` creates a self-cont
 ## 💡 Support
 
 For questions or issues:
-- Check the [Use Case Documentation](./docs/use-case-and-diagrams.md)
+- Check the [Use Case Documentation](./docs/use-cases.md)
 - Contact the development team
 

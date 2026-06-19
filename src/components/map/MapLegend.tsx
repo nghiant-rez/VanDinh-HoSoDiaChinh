@@ -1,21 +1,68 @@
-export function MapLegend() {
+'use client';
+
+import { useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+const LAND_TYPES = [
+  { code: 'LUC', label: 'Dat lua nuoc', color: '#22c55e' },
+  { code: 'ODT', label: 'Dat o', color: '#ef4444' },
+  { code: 'BHK', label: 'Dat bang hoang', color: '#f59e0b' },
+  { code: 'CLN', label: 'Cay lau nam', color: '#84cc16' },
+  { code: 'DGT', label: 'Giao thong', color: '#6b7280' },
+  { code: 'DTL', label: 'Thuy loi', color: '#3b82f6' },
+  { code: 'NTS', label: 'Nuoi trong TS', color: '#06b6d4' },
+  { code: 'TMD', label: 'Thuong mai DV', color: '#a855f7' },
+  { code: 'SKC', label: 'San xuat KD', color: '#f97316' },
+  { code: 'CQP', label: 'Quoc phong', color: '#64748b' },
+];
+
+interface MapLegendProps {
+  parcelCount: number;
+}
+
+export function MapLegend({ parcelCount }: MapLegendProps) {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
-    <div className="absolute bottom-4 right-12 bg-bg-card rounded-lg shadow-md border border-border p-4 z-10">
-      <h4 className="text-sm font-semibold text-text-primary mb-3">Chú giải</h4>
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2 text-sm text-text-secondary">
-          <div className="w-4 h-4 rounded-sm border border-primary bg-primary/20"></div>
-          <span>Thửa đất có hồ sơ</span>
+    <div className="absolute bottom-4 right-12 bg-bg-card rounded-xl shadow-lg border border-border z-10 overflow-hidden">
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-text-primary hover:bg-bg-main transition-colors"
+      >
+        <span>
+          Chu giai
+          {parcelCount > 0 && (
+            <span className="ml-2 text-xs font-normal text-text-secondary">
+              ({parcelCount.toLocaleString()} thua)
+            </span>
+          )}
+        </span>
+        {collapsed ? (
+          <ChevronUp className="w-4 h-4 text-text-secondary" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-text-secondary" />
+        )}
+      </button>
+
+      {!collapsed && (
+        <div className="px-4 pb-3 space-y-1.5">
+          {LAND_TYPES.map((type) => (
+            <div
+              key={type.code}
+              className="flex items-center space-x-2 text-xs text-text-secondary"
+            >
+              <div
+                className="w-3 h-3 rounded-full border border-white/50 flex-shrink-0"
+                style={{ backgroundColor: type.color }}
+              />
+              <span className="font-mono text-[10px] w-7 text-text-secondary/70">
+                {type.code}
+              </span>
+              <span>{type.label}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex items-center space-x-2 text-sm text-text-secondary">
-          <div className="w-4 h-4 rounded-sm border border-border bg-black/5"></div>
-          <span>Thửa đất trống</span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-text-secondary">
-          <div className="w-4 h-4 rounded-sm border border-warning bg-warning/20"></div>
-          <span>Đang có tranh chấp/biến động</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

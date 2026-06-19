@@ -1,0 +1,2105 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777741309,
+          20.728637906
+        ]
+      },
+      "properties": {
+        "id": 137703,
+        "so_thua": "1",
+        "to_ban_do": "27",
+        "dien_tich": 158.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Hïng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777907844,
+          20.72857266
+        ]
+      },
+      "properties": {
+        "id": 137704,
+        "so_thua": "2",
+        "to_ban_do": "27",
+        "dien_tich": 365.1,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng ThÞ Ho¹ch",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777841876,
+          20.728420759
+        ]
+      },
+      "properties": {
+        "id": 137705,
+        "so_thua": "3",
+        "to_ban_do": "27",
+        "dien_tich": 325.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n ViÖt",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778018109,
+          20.728412104
+        ]
+      },
+      "properties": {
+        "id": 137706,
+        "so_thua": "4",
+        "to_ban_do": "27",
+        "dien_tich": 108.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n L­îng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778093312,
+          20.728530001
+        ]
+      },
+      "properties": {
+        "id": 137707,
+        "so_thua": "5",
+        "to_ban_do": "27",
+        "dien_tich": 432.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Oanh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778133984,
+          20.728372289
+        ]
+      },
+      "properties": {
+        "id": 137708,
+        "so_thua": "6",
+        "to_ban_do": "27",
+        "dien_tich": 7.2,
+        "loai_dat": "N§",
+        "mdsd2003": "NTD",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778145039,
+          20.728431402
+        ]
+      },
+      "properties": {
+        "id": 137709,
+        "so_thua": "7",
+        "to_ban_do": "27",
+        "dien_tich": 108.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777862498,
+          20.728247602
+        ]
+      },
+      "properties": {
+        "id": 137710,
+        "so_thua": "8",
+        "to_ban_do": "27",
+        "dien_tich": 335.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Qu©n",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777950129,
+          20.728242147
+        ]
+      },
+      "properties": {
+        "id": 137711,
+        "so_thua": "9",
+        "to_ban_do": "27",
+        "dien_tich": 145.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n LuyÕn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778022571,
+          20.728233058
+        ]
+      },
+      "properties": {
+        "id": 137712,
+        "so_thua": "10",
+        "to_ban_do": "27",
+        "dien_tich": 253.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Tíi",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778130181,
+          20.72822941
+        ]
+      },
+      "properties": {
+        "id": 137713,
+        "so_thua": "11",
+        "to_ban_do": "27",
+        "dien_tich": 342.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.77779156,
+          20.728043695
+        ]
+      },
+      "properties": {
+        "id": 137714,
+        "so_thua": "12",
+        "to_ban_do": "27",
+        "dien_tich": 487.1,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Toµn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777964755,
+          20.72802295
+        ]
+      },
+      "properties": {
+        "id": 137715,
+        "so_thua": "13",
+        "to_ban_do": "27",
+        "dien_tich": 260.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh §øc S¸ch",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778054387,
+          20.728014687
+        ]
+      },
+      "properties": {
+        "id": 137716,
+        "so_thua": "14",
+        "to_ban_do": "27",
+        "dien_tich": 144.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n L­îng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777819792,
+          20.727819017
+        ]
+      },
+      "properties": {
+        "id": 137717,
+        "so_thua": "15",
+        "to_ban_do": "27",
+        "dien_tich": 647.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Kiªn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778010493,
+          20.727785909
+        ]
+      },
+      "properties": {
+        "id": 137718,
+        "so_thua": "16",
+        "to_ban_do": "27",
+        "dien_tich": 504.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Xoa",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778382786,
+          20.727684415
+        ]
+      },
+      "properties": {
+        "id": 137719,
+        "so_thua": "17",
+        "to_ban_do": "27",
+        "dien_tich": 1352.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn TuÊn Tµi",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777797395,
+          20.727512914
+        ]
+      },
+      "properties": {
+        "id": 137720,
+        "so_thua": "18",
+        "to_ban_do": "27",
+        "dien_tich": 937.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng ThÞ T­¬i",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777935637,
+          20.727491423
+        ]
+      },
+      "properties": {
+        "id": 137721,
+        "so_thua": "19",
+        "to_ban_do": "27",
+        "dien_tich": 215.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Lª Xu©n Hoµ",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778006748,
+          20.72748496
+        ]
+      },
+      "properties": {
+        "id": 137722,
+        "so_thua": "20",
+        "to_ban_do": "27",
+        "dien_tich": 361.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Qua",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778109712,
+          20.727474107
+        ]
+      },
+      "properties": {
+        "id": 137723,
+        "so_thua": "21",
+        "to_ban_do": "27",
+        "dien_tich": 461.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng ThÞ Kho¸",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778704119,
+          20.727512335
+        ]
+      },
+      "properties": {
+        "id": 137724,
+        "so_thua": "22",
+        "to_ban_do": "27",
+        "dien_tich": 314.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778251809,
+          20.727455399
+        ]
+      },
+      "properties": {
+        "id": 137725,
+        "so_thua": "23",
+        "to_ban_do": "27",
+        "dien_tich": 649.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Liªn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778395243,
+          20.727435511
+        ]
+      },
+      "properties": {
+        "id": 137726,
+        "so_thua": "24",
+        "to_ban_do": "27",
+        "dien_tich": 461.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng V¨n V¹i",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778561424,
+          20.727413893
+        ]
+      },
+      "properties": {
+        "id": 137727,
+        "so_thua": "25",
+        "to_ban_do": "27",
+        "dien_tich": 774.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng V¨n Tr­êng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777996589,
+          20.727225409
+        ]
+      },
+      "properties": {
+        "id": 137728,
+        "so_thua": "26",
+        "to_ban_do": "27",
+        "dien_tich": 720.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh ThÞ Nªn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778290426,
+          20.727196531
+        ]
+      },
+      "properties": {
+        "id": 137729,
+        "so_thua": "27",
+        "to_ban_do": "27",
+        "dien_tich": 410.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng ThÞ Nô",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778513601,
+          20.727167881
+        ]
+      },
+      "properties": {
+        "id": 137730,
+        "so_thua": "28",
+        "to_ban_do": "27",
+        "dien_tich": 470.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Vinh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777775031,
+          20.72698795
+        ]
+      },
+      "properties": {
+        "id": 137731,
+        "so_thua": "29",
+        "to_ban_do": "27",
+        "dien_tich": 599.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ BÝnh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777865898,
+          20.726977152
+        ]
+      },
+      "properties": {
+        "id": 137732,
+        "so_thua": "30",
+        "to_ban_do": "27",
+        "dien_tich": 181.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n ThÞnh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777942961,
+          20.72697048
+        ]
+      },
+      "properties": {
+        "id": 137733,
+        "so_thua": "31",
+        "to_ban_do": "27",
+        "dien_tich": 467.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Kh¸nh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778053312,
+          20.7269586
+        ]
+      },
+      "properties": {
+        "id": 137734,
+        "so_thua": "32",
+        "to_ban_do": "27",
+        "dien_tich": 459.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Söu",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.77818591,
+          20.72694111
+        ]
+      },
+      "properties": {
+        "id": 137735,
+        "so_thua": "33",
+        "to_ban_do": "27",
+        "dien_tich": 649.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n T©n",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778619555,
+          20.727084573
+        ]
+      },
+      "properties": {
+        "id": 137736,
+        "so_thua": "34",
+        "to_ban_do": "27",
+        "dien_tich": 155.8,
+        "loai_dat": "GT",
+        "mdsd2003": "DGT",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778367334,
+          20.726915359
+        ]
+      },
+      "properties": {
+        "id": 137737,
+        "so_thua": "35",
+        "to_ban_do": "27",
+        "dien_tich": 886.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Kú",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778518359,
+          20.726896701
+        ]
+      },
+      "properties": {
+        "id": 137738,
+        "so_thua": "36",
+        "to_ban_do": "27",
+        "dien_tich": 394.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Vinh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777785465,
+          20.726643309
+        ]
+      },
+      "properties": {
+        "id": 137739,
+        "so_thua": "37",
+        "to_ban_do": "27",
+        "dien_tich": 1044.1,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Quang (c)",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.77795705,
+          20.726627449
+        ]
+      },
+      "properties": {
+        "id": 137740,
+        "so_thua": "38",
+        "to_ban_do": "27",
+        "dien_tich": 180.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ BÝnh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778071893,
+          20.726611394
+        ]
+      },
+      "properties": {
+        "id": 137741,
+        "so_thua": "39",
+        "to_ban_do": "27",
+        "dien_tich": 667.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Kho¸t",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.77824409,
+          20.726583788
+        ]
+      },
+      "properties": {
+        "id": 137742,
+        "so_thua": "40",
+        "to_ban_do": "27",
+        "dien_tich": 648.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n ViÖt",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778402859,
+          20.726558682
+        ]
+      },
+      "properties": {
+        "id": 137743,
+        "so_thua": "41",
+        "to_ban_do": "27",
+        "dien_tich": 577.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§ç ThÞ MËu",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777736685,
+          20.726322511
+        ]
+      },
+      "properties": {
+        "id": 137744,
+        "so_thua": "42",
+        "to_ban_do": "27",
+        "dien_tich": 192.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777854938,
+          20.726297498
+        ]
+      },
+      "properties": {
+        "id": 137745,
+        "so_thua": "43",
+        "to_ban_do": "27",
+        "dien_tich": 745.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "D­¬ng ThÞ Hîp",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778030555,
+          20.726262651
+        ]
+      },
+      "properties": {
+        "id": 137746,
+        "so_thua": "44",
+        "to_ban_do": "27",
+        "dien_tich": 637.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng M¹nh Hµ",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778178744,
+          20.72623398
+        ]
+      },
+      "properties": {
+        "id": 137747,
+        "so_thua": "45",
+        "to_ban_do": "27",
+        "dien_tich": 525.8,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n C­êng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778317629,
+          20.726206977
+        ]
+      },
+      "properties": {
+        "id": 137748,
+        "so_thua": "46",
+        "to_ban_do": "27",
+        "dien_tich": 566.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Mai",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777802106,
+          20.725972744
+        ]
+      },
+      "properties": {
+        "id": 137749,
+        "so_thua": "47",
+        "to_ban_do": "27",
+        "dien_tich": 811.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng §×nh TuÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777944639,
+          20.725945634
+        ]
+      },
+      "properties": {
+        "id": 137750,
+        "so_thua": "48",
+        "to_ban_do": "27",
+        "dien_tich": 276.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777991915,
+          20.725934581
+        ]
+      },
+      "properties": {
+        "id": 137751,
+        "so_thua": "49",
+        "to_ban_do": "27",
+        "dien_tich": 89.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Kho¸t",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778157275,
+          20.725902942
+        ]
+      },
+      "properties": {
+        "id": 137752,
+        "so_thua": "50",
+        "to_ban_do": "27",
+        "dien_tich": 1167.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Thu",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778355925,
+          20.725960394
+        ]
+      },
+      "properties": {
+        "id": 137753,
+        "so_thua": "51",
+        "to_ban_do": "27",
+        "dien_tich": 981.6,
+        "loai_dat": "TL",
+        "mdsd2003": "DTL",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777760769,
+          20.725642699
+        ]
+      },
+      "properties": {
+        "id": 137754,
+        "so_thua": "52",
+        "to_ban_do": "27",
+        "dien_tich": 756.1,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Ng©n",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777969578,
+          20.725602734
+        ]
+      },
+      "properties": {
+        "id": 137755,
+        "so_thua": "53",
+        "to_ban_do": "27",
+        "dien_tich": 885.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Cuèi",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778121028,
+          20.725573597
+        ]
+      },
+      "properties": {
+        "id": 137756,
+        "so_thua": "54",
+        "to_ban_do": "27",
+        "dien_tich": 306.4,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ Lîi",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778196332,
+          20.725561153
+        ]
+      },
+      "properties": {
+        "id": 137757,
+        "so_thua": "55",
+        "to_ban_do": "27",
+        "dien_tich": 280.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng ThÞ Liªn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777718936,
+          20.725309585
+        ]
+      },
+      "properties": {
+        "id": 137758,
+        "so_thua": "56",
+        "to_ban_do": "27",
+        "dien_tich": 378.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Kh¶i",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778182035,
+          20.725318331
+        ]
+      },
+      "properties": {
+        "id": 137759,
+        "so_thua": "57",
+        "to_ban_do": "27",
+        "dien_tich": 504.6,
+        "loai_dat": "GT",
+        "mdsd2003": "DGT",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777859072,
+          20.72528348
+        ]
+      },
+      "properties": {
+        "id": 137760,
+        "so_thua": "58",
+        "to_ban_do": "27",
+        "dien_tich": 726.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng Duy H­ng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778052932,
+          20.725249093
+        ]
+      },
+      "properties": {
+        "id": 137761,
+        "so_thua": "59",
+        "to_ban_do": "27",
+        "dien_tich": 779.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh Xu©n M¹o",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777884684,
+          20.725053485
+        ]
+      },
+      "properties": {
+        "id": 137762,
+        "so_thua": "60",
+        "to_ban_do": "27",
+        "dien_tich": 280.5,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Ph¹m Minh Khoa",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778051196,
+          20.725022111
+        ]
+      },
+      "properties": {
+        "id": 137763,
+        "so_thua": "61",
+        "to_ban_do": "27",
+        "dien_tich": 134.4,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng Ngäc Oanh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777787047,
+          20.724866319
+        ]
+      },
+      "properties": {
+        "id": 137764,
+        "so_thua": "62",
+        "to_ban_do": "27",
+        "dien_tich": 506.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n DiÖn",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777921131,
+          20.724839428
+        ]
+      },
+      "properties": {
+        "id": 137765,
+        "so_thua": "63",
+        "to_ban_do": "27",
+        "dien_tich": 458.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng Ngäc Ph­îng",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.778017702,
+          20.724817945
+        ]
+      },
+      "properties": {
+        "id": 137766,
+        "so_thua": "64",
+        "to_ban_do": "27",
+        "dien_tich": 237.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "§Æng Ngäc Oanh",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777885395,
+          20.724534649
+        ]
+      },
+      "properties": {
+        "id": 137767,
+        "so_thua": "65",
+        "to_ban_do": "27",
+        "dien_tich": 663.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "V­¬ng V¨n Cø",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Quan Tiªn"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.777834407,
+          20.724345285
+        ]
+      },
+      "properties": {
+        "id": 137768,
+        "so_thua": "66",
+        "to_ban_do": "27",
+        "dien_tich": 306.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "TrÞnh V¨n Kh¶i",
+        "dia_chi": "Th«n Thanh Êm",
+        "xu_dong": "§ång Dung H¹"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753425159,
+          20.746506773
+        ]
+      },
+      "properties": {
+        "id": 137769,
+        "so_thua": "1",
+        "to_ban_do": "3",
+        "dien_tich": 890.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "T¹ V¨n To¶n",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753426897,
+          20.746334152
+        ]
+      },
+      "properties": {
+        "id": 137770,
+        "so_thua": "2",
+        "to_ban_do": "3",
+        "dien_tich": 705.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n ViÖt",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753751044,
+          20.746270406
+        ]
+      },
+      "properties": {
+        "id": 137771,
+        "so_thua": "3",
+        "to_ban_do": "3",
+        "dien_tich": 205.8,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753186089,
+          20.746066306
+        ]
+      },
+      "properties": {
+        "id": 137772,
+        "so_thua": "4",
+        "to_ban_do": "3",
+        "dien_tich": 771.6,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753430683,
+          20.746206775
+        ]
+      },
+      "properties": {
+        "id": 137773,
+        "so_thua": "5",
+        "to_ban_do": "3",
+        "dien_tich": 444.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753754135,
+          20.746177176
+        ]
+      },
+      "properties": {
+        "id": 137774,
+        "so_thua": "6",
+        "to_ban_do": "3",
+        "dien_tich": 255.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n B×nh",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752978262,
+          20.745962528
+        ]
+      },
+      "properties": {
+        "id": 137775,
+        "so_thua": "7",
+        "to_ban_do": "3",
+        "dien_tich": 6869.8,
+        "loai_dat": "MN/hg",
+        "mdsd2003": "MNC",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753402263,
+          20.745994001
+        ]
+      },
+      "properties": {
+        "id": 137776,
+        "so_thua": "8",
+        "to_ban_do": "3",
+        "dien_tich": 1080.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Ph¹m Hång Sinh",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753697147,
+          20.745993341
+        ]
+      },
+      "properties": {
+        "id": 137777,
+        "so_thua": "9",
+        "to_ban_do": "3",
+        "dien_tich": 889.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ §Ö",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753141568,
+          20.745762734
+        ]
+      },
+      "properties": {
+        "id": 137778,
+        "so_thua": "10",
+        "to_ban_do": "3",
+        "dien_tich": 555.3,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.75336431,
+          20.745717589
+        ]
+      },
+      "properties": {
+        "id": 137779,
+        "so_thua": "11",
+        "to_ban_do": "3",
+        "dien_tich": 740.1,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "HTX",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753102855,
+          20.745604381
+        ]
+      },
+      "properties": {
+        "id": 137780,
+        "so_thua": "12",
+        "to_ban_do": "3",
+        "dien_tich": 101.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Ph¹m V¨n Nhãt",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753596645,
+          20.745670775
+        ]
+      },
+      "properties": {
+        "id": 137781,
+        "so_thua": "13",
+        "to_ban_do": "3",
+        "dien_tich": 890.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n PhÝch",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.75306212,
+          20.745502943
+        ]
+      },
+      "properties": {
+        "id": 137782,
+        "so_thua": "14",
+        "to_ban_do": "3",
+        "dien_tich": 447.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n H¶i",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753278362,
+          20.745425128
+        ]
+      },
+      "properties": {
+        "id": 137783,
+        "so_thua": "15",
+        "to_ban_do": "3",
+        "dien_tich": 790.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Ph¹m V¨n Nhãt",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753521681,
+          20.745405364
+        ]
+      },
+      "properties": {
+        "id": 137784,
+        "so_thua": "16",
+        "to_ban_do": "3",
+        "dien_tich": 565.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn TiÕn Tr¹m",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.7529812,
+          20.745256345
+        ]
+      },
+      "properties": {
+        "id": 137785,
+        "so_thua": "17",
+        "to_ban_do": "3",
+        "dien_tich": 892.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ LiÔu",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753436965,
+          20.745128976
+        ]
+      },
+      "properties": {
+        "id": 137786,
+        "so_thua": "18",
+        "to_ban_do": "3",
+        "dien_tich": 1035.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ ThÞnh",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752391428,
+          20.744848214
+        ]
+      },
+      "properties": {
+        "id": 137787,
+        "so_thua": "19",
+        "to_ban_do": "3",
+        "dien_tich": 3425.5,
+        "loai_dat": "TL",
+        "mdsd2003": "DTL",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752870353,
+          20.744919011
+        ]
+      },
+      "properties": {
+        "id": 137788,
+        "so_thua": "20",
+        "to_ban_do": "3",
+        "dien_tich": 1076.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Phóc",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753134413,
+          20.744957327
+        ]
+      },
+      "properties": {
+        "id": 137789,
+        "so_thua": "21",
+        "to_ban_do": "3",
+        "dien_tich": 1922.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "T¹ V¨n Vinh",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753588447,
+          20.744946034
+        ]
+      },
+      "properties": {
+        "id": 137790,
+        "so_thua": "22",
+        "to_ban_do": "3",
+        "dien_tich": 1925.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn TiÕn Tr¹m",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752418392,
+          20.744766983
+        ]
+      },
+      "properties": {
+        "id": 137791,
+        "so_thua": "23",
+        "to_ban_do": "3",
+        "dien_tich": 6780.2,
+        "loai_dat": "GT",
+        "mdsd2003": "DGT",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753296911,
+          20.744672088
+        ]
+      },
+      "properties": {
+        "id": 137792,
+        "so_thua": "24",
+        "to_ban_do": "3",
+        "dien_tich": 1600.9,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn Thanh Tïng",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753594381,
+          20.744670875
+        ]
+      },
+      "properties": {
+        "id": 137793,
+        "so_thua": "25",
+        "to_ban_do": "3",
+        "dien_tich": 340.8,
+        "loai_dat": "GT",
+        "mdsd2003": "DGT",
+        "ten_chu": "UBND thÞ trÊn",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.7526921,
+          20.74456228
+        ]
+      },
+      "properties": {
+        "id": 137794,
+        "so_thua": "26",
+        "to_ban_do": "3",
+        "dien_tich": 1636.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Toanh",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753007933,
+          20.744546174
+        ]
+      },
+      "properties": {
+        "id": 137795,
+        "so_thua": "27",
+        "to_ban_do": "3",
+        "dien_tich": 445.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n TuÊn",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753739154,
+          20.744606921
+        ]
+      },
+      "properties": {
+        "id": 137796,
+        "so_thua": "28",
+        "to_ban_do": "3",
+        "dien_tich": 1450.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n §ua",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752594305,
+          20.744262283
+        ]
+      },
+      "properties": {
+        "id": 137797,
+        "so_thua": "29",
+        "to_ban_do": "3",
+        "dien_tich": 1075.2,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n N¨m",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753401978,
+          20.744326943
+        ]
+      },
+      "properties": {
+        "id": 137798,
+        "so_thua": "30",
+        "to_ban_do": "3",
+        "dien_tich": 445.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn ThÞ ThiÕt",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752902241,
+          20.744202584
+        ]
+      },
+      "properties": {
+        "id": 137799,
+        "so_thua": "31",
+        "to_ban_do": "3",
+        "dien_tich": 1559.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Céng",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753152952,
+          20.744202299
+        ]
+      },
+      "properties": {
+        "id": 137800,
+        "so_thua": "32",
+        "to_ban_do": "3",
+        "dien_tich": 1078.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Bét",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.753617046,
+          20.744206318
+        ]
+      },
+      "properties": {
+        "id": 137801,
+        "so_thua": "33",
+        "to_ban_do": "3",
+        "dien_tich": 1450.0,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "NguyÔn V¨n Tµi",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          105.752517181,
+          20.744025514
+        ]
+      },
+      "properties": {
+        "id": 137802,
+        "so_thua": "34",
+        "to_ban_do": "3",
+        "dien_tich": 1149.7,
+        "loai_dat": "2L",
+        "mdsd2003": "LUC",
+        "ten_chu": "Ph¹m V¨n Thôc",
+        "dia_chi": "Th«n Ngä X¸",
+        "xu_dong": "§ång Sau Chïa"
+      }
+    }
+  ]
+}

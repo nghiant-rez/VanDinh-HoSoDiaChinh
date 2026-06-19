@@ -1,0 +1,95 @@
+# Changelog
+
+Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
+
+## 2026-06-18 - DeepSeek Fixes Pass
+
+### Frontend (TypeScript/React)
+- `src/components/storage/StorageExplorer.tsx` - `int` -> `number` (compilation breaker); typed all `any` props; fixed optional callback calls.
+- `src/components/ui/FilterPanel.tsx` - added `'use client'` (runtime breaker).
+- `src/components/ui/DataTable.tsx` - removed `any` cast.
+- `src/components/storage/StorageModal.tsx` - typed `editData` prop.
+- `src/app/storage/page.tsx` - fixed `useEffect` setState-in-effect lint error; now fetches real `userId` from `/api/auth/me` instead of hardcoded `'1'`.
+- `src/app/(dashboard)/accounts/page.tsx` - typed `AccountRow` interface, removed `any`.
+- `src/app/(dashboard)/logs/page.tsx` - typed `LogRow` interface, removed `any`, removed unused import.
+- `src/app/(dashboard)/search/page.tsx` - typed row, removed unused `useState`.
+- `src/app/login/page.tsx` - removed unused `err` catch param.
+- `src/app/api/auth/me/route.ts` - removed unused `requireAuth` import.
+- `src/app/api/maps/export/route.ts` - removed unused `error` catch param.
+- `src/app/api/maps/import/route.ts` - removed unused `_error` catch param.
+- `src/app/api/parcels/route.ts` - removed unused `_error` catch param.
+- `src/middleware.ts` - removed unused `defaultSession` import.
+
+### Backend (Python)
+- `backend/app/dependencies.py` - removed `Header(1)` default (was auto-auth as user 1); removed dummy user bypass in `require_roles`; added SECURITY NOTE comment.
+- `backend/app/routers/auth.py` - deleted duplicate `get_db()`, imports from `dependencies.py` instead.
+- `backend/app/services/gis_service.py` - column check `< 10` -> `< 12` (was crash on files with 10-11 columns).
+- `backend/app/routers/gis.py` - all 5 `async def` -> `def` (were blocking event loop with sync code); removed unused `format` param.
+
+### Config/Docs
+- `README.md` - rewritten: Prisma + Next.js API Routes -> Python FastAPI + SQLAlchemy.
+- `.gitignore` - added `__pycache__/`, `*.py[cod]`, `.venv/`, `backend/data/`.
+- `next.config.ts` - added `turbopack.root` to silence lockfile warning.
+
+### Git
+- Dropped stale stash `stash@{0}` (obsolete AGENTS.md changes on main).
+
+### Verification
+- `npm run lint`: 0 errors, 0 warnings.
+- `npx tsc --noEmit`: 0 errors.
+- `npm run build`: passes (7.4s, 20 pages).
+
+## 2026-06-19 - Docs Reorganization
+
+- Renamed `use-case-and-diagrams.md` -> `use-cases.md`.
+- Renamed `project-references.md` -> `references.md`.
+- Rewrote `project-context.md` -> `architecture.md` (removed duplicated fix/status lists).
+- Rewrote `security-issues.md` -> `security.md` (updated for post-Huy-merge state; S3 now partially resolved).
+- Rewrote `fixes-deepseek-2026-06-18.md` -> `changelog.md` (dated changelog format).
+- Added `README.md` (docs index + ownership quick-ref).
+- Added `feature-ownership.md` (per-UC owner/files/status table).
+
+## 2026-06-19 - UC-04 PostGIS Persistence
+
+### Backend (Python)
+- `backend/app/models.py` - added `ThuaDat` model (so_thua, to_ban_do, dien_tich, loai_dat, mdsd2003, ten_chu, dia_chi, xu_dong; geom + centroid columns managed via raw SQL).
+- `backend/app/database.py` - auto-enable PostGIS extension on startup.
+- `backend/app/config.py` - `dgn_source_path` set to `E:\Ban Do\Ban do V8\BDDC TT Van Dinh` (80 dc*.txt + 81 dc*.dgn files).
+- `backend/app/services/gis_service.py` - full rewrite:
+  - `parse_dgn_polygons()` - uses ogr2ogr subprocess to convert DGN -> GeoJSON with VN-2000 to WGS84 coordinate transform, filters Polygon/MultiPolygon features.
+  - `match_parcels_to_polygons()` - uses shapely `contains` to match TXT centroids to DGN polygons by spatial containment.
+  - `import_all_parcels(db)` - orchestrates: parse TXT + DGN, transform coordinates, match polygons, batch insert to PostGIS. Replaces in-memory cache.
+  - `get_parcels_geojson(db, filters)` - queries PostGIS with `ST_AsGeoJSON(COALESCE(geom, centroid))`, supports bbox/so_thua/to_ban_do filtering.
+  - `get_parcel_count(db)`, `get_map_center(db)` - PostGIS aggregate queries.
+  - `ensure_geometry_columns(db)` - adds PostGIS geometry columns + GIST spatial indexes if not present.
+- `backend/app/routers/gis.py` - rewritten to use PostGIS via `get_db` dependency instead of in-memory cache. Import endpoint requires ADMIN role. All endpoints query PostGIS.
+
+### Frontend (TypeScript)
+- `src/app/api/maps/import/route.ts` - forwards `X-User-Id` header to FastAPI for role-based auth on import.
+
+### Infrastructure
+- PostgreSQL 18 + PostGIS 3.6 running in Docker container `vandinh-postgis` (local PostgreSQL 18 installation has broken DLL dependencies).
+- 14,714 parcels imported to PostGIS from 80 dc*.txt files (31.2s import time).
+- All parcels have centroid POINT geometry in WGS84 (EPSG:4326).
+
+### Known Issue: DGNv8 Not Supported
+- V8 DGN files are DGNv8 format; OSGeo4W's GDAL build only has the old DGN driver.
+- V7 DGN files (old format) parse correctly (28 files, 482 polygons per file).
+- Parcel polygon geometry is NULL for all V8-sourced parcels (centroids still available).
+- Fix options: install DGNv8 driver for GDAL, use ODA File Converter, or use V7 DGN files as fallback.
+
+### Verification
+- `npm run lint`: 0 errors.
+- `npx tsc --noEmit`: 0 errors.
+- `npm run build`: passes.
+- Import self-test: 14,714 parcels in DB, bbox/center/search all working.
+
+Triggered by comparing the original Dev 1 / Dev 2 assignment against the codebase.
+
+- `feature-ownership.md`: UC-09 owner corrected from "TBD" to Nghia (was always assigned to Nghia per Dev 1 scope). Split "owner" into "Assigned owner" vs "Built by" to expose stopgap work.
+- `feature-ownership.md`: UC-01 (auth), UC-02 (accounts), UC-10 (logs) relabeled as stopgap built by Nghia outside assigned scope; intended owner is Huy/other. Added "Reassigned stopgap" section.
+- `feature-ownership.md`: UC-04 status corrected from "Done" to "In progress" - `.dgn` geometry parsing (8967 files, the bulk) and PostGIS persistence are pending; only `dc*.txt` attribute parsing is done.
+- `feature-ownership.md`: UC-07 clarified as map-side export (GeoJSON done, image pending); PDF/print is record-side, not map-side.
+- `architecture.md`: GIS section rewritten. Original docs said "DXF/Shapefile" (copied from the assignment spec); actual `E:\Ban Do` data is `.dgn` (MicroStation, 8967 files) + `dc*.txt` (attributes, 189 files). No `.dxf` or `.shp` files exist in the source. Added note about the format mismatch.
+- `architecture.md`: Added GIS limitations section (in-memory cache, no DGN geometry, no indexing).
+- `docs/README.md`: ownership quick-ref updated to match the corrected Dev 1 / Dev 2 split.

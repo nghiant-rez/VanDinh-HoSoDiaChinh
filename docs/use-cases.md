@@ -1,6 +1,6 @@
 # Use Case Diagram và Use Case Specification
 
-Hệ thống Quản lý Hồ sơ Đất đai Vạn Đình
+Hệ thống Quản lý Hồ sơ Đất đai Vân Đình
 
 ---
 
@@ -111,7 +111,7 @@ Actor bên trái: Admin (hình người)
 Actor bên phải: Staff (hình người)
 
 System Boundary (hình chữ nhật lớn):
-  "Hệ thống Quản lý Hồ sơ Đất đai Vạn Đình"
+  "Hệ thống Quản lý Hồ sơ Đất đai Vân Đình"
 
 Bên trong system boundary, chia 4 nhóm nhỏ
 (sub-boundary), mỗi nhóm là 1 hình chữ nhật

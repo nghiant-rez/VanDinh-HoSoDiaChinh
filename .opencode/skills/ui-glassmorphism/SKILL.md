@@ -16,4 +16,4 @@ Dark mode: class-based (Tailwind 4 default)
 - Light: `bg-white text-gray-900`
 - Dark: `bg-gray-900 text-gray-100`
 
-Figma: `docs/project-references.md`
+Figma: `docs/references.md`

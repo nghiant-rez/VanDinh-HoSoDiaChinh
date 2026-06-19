@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, BigInteger, Numeric
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -79,8 +79,14 @@ class ThuaDat(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     tobando = Column(String(50), nullable=False)
     sothua = Column(String(50), nullable=False)
-    dientich = Column(Integer, nullable=False) # Or Numeric
-    # MapCoordinates omitted for now to avoid geoalchemy2 dependency errors
+    dientich = Column(Numeric(18, 2))
+    loai_dat = Column(String(50))
+    mdsd2003 = Column(String(50))
+    ten_chu = Column(String(200))
+    dia_chi = Column(String(500))
+    xu_dong = Column(String(100))
+    # geom (POLYGON, SRID 4326) and centroid (POINT, SRID 4326)
+    # managed via raw SQL — see gis_service.py
 
 class HoSo(Base):
     __tablename__ = "hoso"

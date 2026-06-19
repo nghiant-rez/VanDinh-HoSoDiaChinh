@@ -1,7 +1,6 @@
 # Project References
 
 External links and tools for the Van Dinh Land Management
-System (SWP391 Group 6).
 
 ---
 
@@ -49,10 +48,16 @@ System (SWP391 Group 6).
 
 ## Internal Docs
 
+See `docs/README.md` for the full doc map. Key links:
+
 | Document | Path |
 | --- | --- |
-| Use Case Spec | `docs/use-case-and-diagrams.md` |
-| Project References | `docs/project-references.md` (this file) |
+| Use Case Spec | `docs/use-cases.md` |
+| Architecture | `docs/architecture.md` |
+| Feature Ownership | `docs/feature-ownership.md` |
+| Security | `docs/security.md` |
+| Changelog | `docs/changelog.md` |
+| References | `docs/references.md` (this file) |
 
 ---
 
