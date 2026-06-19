@@ -1,25 +1,26 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Building2, Server, Layers, Archive, Plus, Edit, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Building2, Server, Layers, Archive, FileText, Plus } from 'lucide-react';
 import StorageModal from './StorageModal';
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
-type HopSo = { id: number; tenhopso: string; tangluutruid: int };
-type Tang = { id: number; tentang: string; keluutruid: int; hop_sos: HopSo[] };
-type Ke = { id: number; tenke: string; kholuutruid: int; tangs: Tang[] };
+type HoSo = { id: number; tenhoso: string; hopsoluutruid: number; mahoso: string };
+type HopSo = { id: number; tenhopso: string; tangluutruid: number; ho_sos: HoSo[] };
+type Tang = { id: number; tentang: string; keluutruid: number; hop_sos: HopSo[] };
+type Ke = { id: number; tenke: string; kholuutruid: number; tangs: Tang[] };
 type Kho = { id: number; makho: string; tenkho: string; kes: Ke[] };
 
-const TreeNode = ({ 
-  title, subtitle, icon: Icon, children, level, userRole, onAdd, onEdit, onDelete 
+const TreeNode = ({
+  title, subtitle, icon: Icon, children, level, userRole, onAdd, onEdit, onDelete
 }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const isLeaf = !children || children.length === 0;
-  const paddingLeft = level * 24 + 16; 
+  const paddingLeft = level * 24 + 16;
 
   return (
     <div className="flex flex-col">
-      <div 
+      <div
         className="group flex items-center justify-between py-2.5 pr-4 border-b border-transparent hover:bg-slate-50 hover:border-slate-100 transition-colors cursor-pointer"
         style={{ paddingLeft: `${paddingLeft}px` }}
         onClick={() => !isLeaf && setIsOpen(!isOpen)}
@@ -28,42 +29,46 @@ const TreeNode = ({
           <span className="w-5 flex justify-center text-slate-400">
             {!isLeaf && (isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />)}
           </span>
-          <Icon size={18} className={`${level === 0 ? 'text-indigo-600' : 'text-slate-500'}`} />
-          <span className={`font-medium ${level === 0 ? 'text-base' : 'text-sm'}`}>
+          <Icon size={24} className={`${level === 0 ? 'text-indigo-600' : 'text-slate-500'}`} />
+          <span className={`font-medium ${level === 0 ? 'text-2xl text-slate-800' : 'text-xl text-slate-600'}`}>
             {title}
           </span>
           {subtitle && (
-            <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-2">
+            <span className="text-sm font-mono text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full ml-3 shadow-sm">
               {subtitle}
             </span>
           )}
         </div>
 
         {userRole === 'ADMIN' && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {level < 3 && (
-              <button 
+          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {level < 3 && onAdd && (
+              <button
                 onClick={(e) => { e.stopPropagation(); onAdd(); }}
-                className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md" 
+                className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-100 rounded-md transition-colors"
                 title="Thêm cấp con"
               >
-                <Plus size={16} />
+                Thêm cấp con
               </button>
             )}
-            <button 
-              onClick={(e) => { e.stopPropagation(); onEdit(); }}
-              className="p-1.5 text-amber-600 hover:bg-amber-100 rounded-md"
-              title="Sửa"
-            >
-              <Edit size={16} />
-            </button>
-            <button 
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="p-1.5 text-red-600 hover:bg-red-100 rounded-md"
-              title="Xóa"
-            >
-              <Trash2 size={16} />
-            </button>
+            {onEdit && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="px-3 py-1.5 text-sm font-medium text-amber-600 hover:bg-amber-100 rounded-md transition-colors"
+                title="Sửa"
+              >
+                Sửa
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                title="Xóa"
+              >
+                Xóa
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -78,7 +83,7 @@ const TreeNode = ({
 
 export default function StorageExplorer({ treeData, userRole, onRefresh }: { treeData: Kho[], userRole: string, onRefresh: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalConfig, setModalConfig] = useState<{level: number, editData: any, parentId?: number}>({ level: 0, editData: null });
+  const [modalConfig, setModalConfig] = useState<{ level: number, editData: any, parentId?: number }>({ level: 0, editData: null });
 
   const handleAdd = (level: number, parentId?: number) => {
     setModalConfig({ level, editData: null, parentId });
@@ -92,13 +97,13 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
 
   const handleDelete = async (level: number, id: number) => {
     if (!confirm('Bạn có chắc chắn muốn xóa mục này?')) return;
-    
+
     const endpoints = ['kho', 'ke', 'tang', 'hopso'];
     try {
       const res = await fetch(`http://localhost:8000/api/storage/${endpoints[level]}/${id}`, {
         method: 'DELETE',
         headers: {
-          'x-user-id': '1' // Giả lập Admin dummy (id=1)
+          'x-user-id': '1'
         }
       });
       if (res.ok) {
@@ -118,9 +123,22 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
     const endpoints = ['kho', 'ke', 'tang', 'hopso'];
     const method = editData ? 'PUT' : 'POST';
     const url = `http://localhost:8000/api/storage/${endpoints[level]}${editData ? `/${editData.id}` : ''}`;
-    
-    let payload: any = { ...formData };
-    // Thêm parent_id tương ứng
+
+    let payload: any = {};
+
+    // Map trường "ten" chung thành tên trường đặc thù của Backend
+    if (level === 0) {
+      payload.makho = formData.makho;
+      payload.tenkho = formData.ten;
+    } else if (level === 1) {
+      payload.tenke = formData.ten;
+    } else if (level === 2) {
+      payload.tentang = formData.ten;
+    } else if (level === 3) {
+      payload.tenhopso = formData.ten;
+    }
+
+    // Thêm parent_id tương ứng khi tạo mới
     if (!editData) {
       if (level === 1) payload.kholuutruid = parentId;
       if (level === 2) payload.keluutruid = parentId;
@@ -132,7 +150,7 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
         method,
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': '1' // Giả lập Admin dummy (id=1)
+          'x-user-id': '1'
         },
         body: JSON.stringify(payload)
       });
@@ -149,19 +167,17 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden max-w-4xl mx-auto">
+    <div className="bg-white flex-1 flex flex-col w-full h-full">
       <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <Building2 className="text-indigo-600" /> Sơ Đồ Lưu Trữ Vật Lý
+          <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
+            Cấu Hình Kho Lưu Trữ
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Quản lý sơ đồ vị trí các hồ sơ giấy
-          </p>
+
         </div>
-        
+
         {userRole === 'ADMIN' && (
-          <button 
+          <button
             onClick={() => handleAdd(0)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow flex items-center gap-2"
           >
@@ -170,10 +186,10 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
         )}
       </div>
 
-      <div className="py-2 min-h-[300px]">
+      <div className="py-2 flex-1 overflow-y-auto">
         {treeData.length === 0 && <div className="p-6 text-center text-slate-500">Chưa có dữ liệu kho.</div>}
         {treeData.map((kho) => (
-          <TreeNode 
+          <TreeNode
             key={kho.id} level={0} userRole={userRole}
             title={kho.tenkho} subtitle={kho.makho} icon={Building2}
             onAdd={() => handleAdd(1, kho.id)}
@@ -181,7 +197,7 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
             onDelete={() => handleDelete(0, kho.id)}
           >
             {kho.kes?.map((ke) => (
-              <TreeNode 
+              <TreeNode
                 key={ke.id} level={1} userRole={userRole}
                 title={ke.tenke} icon={Server}
                 onAdd={() => handleAdd(2, ke.id)}
@@ -189,7 +205,7 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
                 onDelete={() => handleDelete(1, ke.id)}
               >
                 {ke.tangs?.map((tang) => (
-                  <TreeNode 
+                  <TreeNode
                     key={tang.id} level={2} userRole={userRole}
                     title={tang.tentang} icon={Layers}
                     onAdd={() => handleAdd(3, tang.id)}
@@ -197,12 +213,19 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
                     onDelete={() => handleDelete(2, tang.id)}
                   >
                     {tang.hop_sos?.map((hop) => (
-                      <TreeNode 
+                      <TreeNode
                         key={hop.id} level={3} userRole={userRole}
                         title={hop.tenhopso} icon={Archive}
                         onEdit={() => handleEdit(3, hop)}
                         onDelete={() => handleDelete(3, hop.id)}
-                      />
+                      >
+                        {hop.ho_sos?.map((hoso) => (
+                          <TreeNode
+                            key={hoso.id} level={4} userRole={userRole}
+                            title={hoso.tenhoso} subtitle={hoso.mahoso} icon={FileText}
+                          />
+                        ))}
+                      </TreeNode>
                     ))}
                   </TreeNode>
                 ))}
@@ -212,7 +235,7 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
         ))}
       </div>
 
-      <StorageModal 
+      <StorageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         level={modalConfig.level}

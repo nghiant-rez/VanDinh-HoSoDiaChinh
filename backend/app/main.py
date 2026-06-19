@@ -1,23 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import storage
+from app.routers import auth, storage, hoso
 from app.database import engine, Base
 
-# Tạo bảng CSDL (Nên dùng migration script trong thực tế)
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Van Dinh Backend", version="0.1.0")
+app = FastAPI(title="Hồ Sơ Địa Chính API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(storage.router)
-
+app.include_router(hoso.router)
 @app.get("/api/health")
 def health():
     return {"status": "ok"}

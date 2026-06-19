@@ -66,3 +66,68 @@ class HopSoLuuTru(Base):
     tenhopso = Column(String(100), nullable=False)
     
     tang = relationship("TangLuuTru", back_populates="hop_sos")
+    ho_sos = relationship("HoSo", back_populates="hop_so", cascade="all, delete-orphan")
+
+class DuAn(Base):
+    __tablename__ = "duan"
+    id = Column(Integer, primary_key=True, index=True)
+    maduan = Column(String(100), unique=True, nullable=False)
+    tenduan = Column(String(500), nullable=False)
+
+class ThuaDat(Base):
+    __tablename__ = "thuadat"
+    id = Column(BigInteger, primary_key=True, index=True)
+    tobando = Column(String(50), nullable=False)
+    sothua = Column(String(50), nullable=False)
+    dientich = Column(Integer, nullable=False) # Or Numeric
+    # MapCoordinates omitted for now to avoid geoalchemy2 dependency errors
+
+class HoSo(Base):
+    __tablename__ = "hoso"
+    
+    id = Column(BigInteger, primary_key=True, index=True)
+    idcha = Column(BigInteger, ForeignKey("hoso.id"))
+    mahoso = Column(String(100), unique=True, nullable=False)
+    tenhoso = Column(String(500), nullable=False)
+    loaihosoid = Column(Integer) # ForeignKey("loaihoso.id")
+    
+    thuadatid = Column(BigInteger, ForeignKey("thuadat.id"))
+    duanid = Column(Integer, ForeignKey("duan.id"))
+    
+    kholuutruid = Column(Integer, ForeignKey("kholuutru.id"))
+    keluutruid = Column(Integer, ForeignKey("keluutru.id"))
+    tangluutruid = Column(Integer, ForeignKey("tangluutru.id"))
+    hopsoluutruid = Column(Integer, ForeignKey("hopsoluutru.id"))
+    
+    # MapCoordinates omitted
+    
+    chusohuu = Column(String(200), nullable=True)
+    trangthai = Column(String(50), default="Hoàn thành")
+    
+    createdbyuserid = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    
+    hop_so = relationship("HopSoLuuTru", back_populates="ho_sos")
+    attachments = relationship("Attachments", back_populates="hoso", cascade="all, delete-orphan")
+    thua_dat = relationship("ThuaDat")
+    du_an = relationship("DuAn")
+    kho_luu_tru = relationship("KhoLuuTru")
+    ke_luu_tru = relationship("KeLuuTru")
+    tang_luu_tru = relationship("TangLuuTru")
+
+class Attachments(Base):
+    __tablename__ = "attachments"
+    id = Column(BigInteger, primary_key=True, index=True)
+    hosoid = Column(BigInteger, ForeignKey("hoso.id", ondelete="CASCADE"), nullable=False)
+    documentname = Column(String(500), nullable=False)
+    extension = Column(String(20), nullable=False)
+    storagepath = Column(String(1000), nullable=False)
+    ocrextractedtext = Column(String) # For GIN index search
+    uploadedbyuserid = Column(BigInteger, ForeignKey("users.id"), nullable=False)
+    
+    hoso = relationship("HoSo", back_populates="attachments")
+
+class LienKetHoSo(Base):
+    __tablename__ = "lienkethoso"
+    hosogocid = Column(BigInteger, ForeignKey("hoso.id"), primary_key=True)
+    hosodichid = Column(BigInteger, ForeignKey("hoso.id"), primary_key=True)
+    loailienket = Column(String(100), primary_key=True)

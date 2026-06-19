@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session, selectinload
 from typing import List
 
 from app.dependencies import get_db, require_roles
-from app.models import User, KhoLuuTru, KeLuuTru, TangLuuTru, HopSoLuuTru
+from app.models import User, KhoLuuTru, KeLuuTru, TangLuuTru, HopSoLuuTru, HoSo
 from app.schemas import (
-    KhoLuuTruTreeResponse, KhoLuuTruCreate,
-    KeLuuTruCreate, KeLuuTruResponse,
-    TangLuuTruCreate, TangLuuTruResponse,
-    HopSoLuuTruCreate, HopSoLuuTruResponse
+    KhoLuuTruTreeResponse, KhoLuuTruCreate, KhoLuuTruUpdate,
+    KeLuuTruCreate, KeLuuTruResponse, KeLuuTruUpdate,
+    TangLuuTruCreate, TangLuuTruResponse, TangLuuTruUpdate,
+    HopSoLuuTruCreate, HopSoLuuTruResponse, HopSoLuuTruUpdate
 )
 
 router = APIRouter(prefix="/api/storage", tags=["Physical Storage"])
@@ -25,6 +25,7 @@ def get_storage_tree(
             selectinload(KhoLuuTru.kes)
             .selectinload(KeLuuTru.tangs)
             .selectinload(TangLuuTru.hop_sos)
+            .selectinload(HopSoLuuTru.ho_sos)
         )
         .all()
     )
@@ -39,11 +40,43 @@ def create_kho(
     db: Session = Depends(get_db),
     current_admin: User = Depends(require_roles(["ADMIN"]))
 ):
+    # Tạo kho mới
     new_kho = KhoLuuTru(makho=kho_data.makho, tenkho=kho_data.tenkho)
     db.add(new_kho)
+    db.flush() # Flush để lấy id của kho mới
+    
+    # Khởi tạo 4 kệ mặc định, mỗi kệ 4 tầng
+    for i in range(1, 5):
+        new_ke = KeLuuTru(kholuutruid=new_kho.id, tenke=f"Kệ {i}")
+        db.add(new_ke)
+        db.flush() # Lấy id của kệ vừa tạo
+        for j in range(1, 5):
+            db.add(TangLuuTru(keluutruid=new_ke.id, tentang=f"Tầng {j}"))
+        
     db.commit()
     db.refresh(new_kho)
     return new_kho
+
+@router.put("/kho/{kho_id}", response_model=KhoLuuTruTreeResponse)
+def update_kho(
+    kho_id: int,
+    kho_data: KhoLuuTruUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_roles(["ADMIN"]))
+):
+    kho = db.query(KhoLuuTru).filter(KhoLuuTru.id == kho_id).first()
+    if not kho:
+        raise HTTPException(status_code=404, detail="Kho không tồn tại")
+        
+    if kho_data.makho is not None:
+        kho.makho = kho_data.makho
+    if kho_data.tenkho is not None:
+        kho.tenkho = kho_data.tenkho
+        
+    db.commit()
+    db.refresh(kho)
+    return kho
+
 
 @router.delete("/kho/{kho_id}")
 def delete_kho(
@@ -77,9 +110,34 @@ def create_ke(
 ):
     new_ke = KeLuuTru(kholuutruid=ke_data.kholuutruid, tenke=ke_data.tenke)
     db.add(new_ke)
+    db.flush()
+    
+    # Khởi tạo 4 tầng mặc định cho kệ mới
+    for j in range(1, 5):
+        db.add(TangLuuTru(keluutruid=new_ke.id, tentang=f"Tầng {j}"))
+        
     db.commit()
     db.refresh(new_ke)
     return new_ke
+
+@router.put("/ke/{ke_id}", response_model=KeLuuTruResponse)
+def update_ke(
+    ke_id: int,
+    ke_data: KeLuuTruUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_roles(["ADMIN"]))
+):
+    ke = db.query(KeLuuTru).filter(KeLuuTru.id == ke_id).first()
+    if not ke:
+        raise HTTPException(status_code=404, detail="Kệ không tồn tại")
+        
+    if ke_data.tenke is not None:
+        ke.tenke = ke_data.tenke
+        
+    db.commit()
+    db.refresh(ke)
+    return ke
+
 
 @router.delete("/ke/{ke_id}")
 def delete_ke(
@@ -117,6 +175,25 @@ def create_tang(
     db.refresh(new_tang)
     return new_tang
 
+@router.put("/tang/{tang_id}", response_model=TangLuuTruResponse)
+def update_tang(
+    tang_id: int,
+    tang_data: TangLuuTruUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_roles(["ADMIN"]))
+):
+    tang = db.query(TangLuuTru).filter(TangLuuTru.id == tang_id).first()
+    if not tang:
+        raise HTTPException(status_code=404, detail="Tầng không tồn tại")
+        
+    if tang_data.tentang is not None:
+        tang.tentang = tang_data.tentang
+        
+    db.commit()
+    db.refresh(tang)
+    return tang
+
+
 @router.delete("/tang/{tang_id}")
 def delete_tang(
     tang_id: int,
@@ -152,6 +229,25 @@ def create_hopso(
     db.commit()
     db.refresh(new_hopso)
     return new_hopso
+
+@router.put("/hopso/{hopso_id}", response_model=HopSoLuuTruResponse)
+def update_hopso(
+    hopso_id: int,
+    hopso_data: HopSoLuuTruUpdate,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_roles(["ADMIN"]))
+):
+    hopso = db.query(HopSoLuuTru).filter(HopSoLuuTru.id == hopso_id).first()
+    if not hopso:
+        raise HTTPException(status_code=404, detail="Hộp số không tồn tại")
+        
+    if hopso_data.tenhopso is not None:
+        hopso.tenhopso = hopso_data.tenhopso
+        
+    db.commit()
+    db.refresh(hopso)
+    return hopso
+
 
 @router.delete("/hopso/{hopso_id}")
 def delete_hopso(
