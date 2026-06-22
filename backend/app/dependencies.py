@@ -11,7 +11,7 @@ def get_db():
         db.close()
 
 # ponytail: X-User-Id header for demo auth. Replace with JWT in production.
-def get_current_user(x_user_id: int = Header(1), db: Session = Depends(get_db)):
+def get_current_user(x_user_id: int = Header(...), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == x_user_id, User.isactive == True).first()
     if not user:
         raise HTTPException(

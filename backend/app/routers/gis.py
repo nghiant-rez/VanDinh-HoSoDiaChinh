@@ -71,6 +71,7 @@ def import_parcels(
             center=result.center,
         )
     except Exception as e:
+        db.rollback()
         logger.error("Import failed: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -90,10 +91,12 @@ def get_parcels(
     """Get parcels as GeoJSON from PostGIS, optionally filtered by bbox or search."""
     if limit < 1 or limit > 50000:
         raise HTTPException(status_code=400, detail="limit must be between 1 and 50000")
-    if min_lat is not None and not -90 <= min_lat <= 90:
-        raise HTTPException(status_code=400, detail="lat must be between -90 and 90")
-    if min_lon is not None and not -180 <= min_lon <= 180:
-        raise HTTPException(status_code=400, detail="lon must be between -180 and 180")
+    for lat_val in (min_lat, max_lat):
+        if lat_val is not None and not -90 <= lat_val <= 90:
+            raise HTTPException(status_code=400, detail="lat must be between -90 and 90")
+    for lon_val in (min_lon, max_lon):
+        if lon_val is not None and not -180 <= lon_val <= 180:
+            raise HTTPException(status_code=400, detail="lon must be between -180 and 180")
 
     count = get_parcel_count(db)
     if count == 0:
@@ -124,6 +127,13 @@ def export_parcels(
     current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     """Export parcels as downloadable GeoJSON from PostGIS."""
+    for lat_val in (min_lat, max_lat):
+        if lat_val is not None and not -90 <= lat_val <= 90:
+            raise HTTPException(status_code=400, detail="lat must be between -90 and 90")
+    for lon_val in (min_lon, max_lon):
+        if lon_val is not None and not -180 <= lon_val <= 180:
+            raise HTTPException(status_code=400, detail="lon must be between -180 and 180")
+
     count = get_parcel_count(db)
     if count == 0:
         raise HTTPException(

@@ -8,7 +8,7 @@ from app.models import User, KhoLuuTru, KeLuuTru, TangLuuTru, HopSoLuuTru, HoSo,
 
 db = SessionLocal()
 try:
-    # 1. Create admin user with required fields
+    # 1. Create or repair admin user with required fields
     user = db.query(User).filter(User.id == 1).first()
     if not user:
         pw_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode("utf-8")
@@ -21,6 +21,11 @@ try:
             isactive=True,
         )
         db.add(user)
+        db.commit()
+    elif not user.email or not user.passwordhash:
+        pw_hash = bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode("utf-8")
+        user.email = user.email or "admin@vandinh.local"
+        user.passwordhash = pw_hash
         db.commit()
 
     # 2. Add ADMIN + STAFF roles

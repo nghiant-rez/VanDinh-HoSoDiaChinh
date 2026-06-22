@@ -118,6 +118,11 @@ def create_hoso(
                     ThuaDat.tobando == request.tobando,
                     ThuaDat.sothua == request.sothua
                 ).first()
+                if not thuadat:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Loi tao thua dat va khong tim thay ban ghi ton tai",
+                    )
 
         thuadat_id = thuadat.id
 

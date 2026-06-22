@@ -47,7 +47,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             user.passwordhash.encode('utf-8')
         )
     except ValueError:
-        logger.error("Invalid password hash format for user %s (id=%s)", user.username, user.id)
+        logger.error("Invalid password hash format for user id=%s", user.id)
         is_match = False
         
     if not is_match:
