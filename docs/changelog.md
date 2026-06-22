@@ -93,3 +93,41 @@ Triggered by comparing the original Dev 1 / Dev 2 assignment against the codebas
 - `architecture.md`: GIS section rewritten. Original docs said "DXF/Shapefile" (copied from the assignment spec); actual `E:\Ban Do` data is `.dgn` (MicroStation, 8967 files) + `dc*.txt` (attributes, 189 files). No `.dxf` or `.shp` files exist in the source. Added note about the format mismatch.
 - `architecture.md`: Added GIS limitations section (in-memory cache, no DGN geometry, no indexing).
 - `docs/README.md`: ownership quick-ref updated to match the corrected Dev 1 / Dev 2 split.
+
+## 2026-06-22 — Backend Bug Fixes + Auth Hardening
+
+### Critical Auth Fix
+- `backend/app/dependencies.py` — removed dummy user bypass; removed `Header(1)` default (was auto-auth as user 1); `Header(...)` now requires X-User-Id to be sent; missing user returns 401.
+- `backend/app/routers/gis.py` — added `require_roles` to all 5 endpoints (was 4 unauthenticated).
+- `backend/app/routers/hoso.py` — `createdbyuserid` now uses `current_user.id` from auth dependency instead of hardcoded `1`.
+- `src/app/api/parcels/route.ts` — now forwards `X-User-Id` header from session (was missing, would 422 after Header(...) change).
+- `src/app/api/maps/export/route.ts` — same X-User-Id fix.
+
+### Multi-Role Bug (new finding)
+- `backend/app/routers/auth.py:68` — login returns only first role (`user_roles_query[0][0]`). A user with `[STAFF, ADMIN]` gets only STAFF, locking them out of admin pages. Needs `list[str]` return.
+
+### Input Validation
+- `backend/app/routers/gis.py` — added bounds on `limit` (1-50000), lat (-90 to 90), lon (-180 to 180) for both `/parcels` and `/export`.
+- `backend/app/routers/gis.py` — added `limit_files >= 0` validation on import.
+- `backend/app/routers/auth.py` — added `Field(min_length=1, max_length=100)` on username/password.
+
+### Seed Script Fix
+- `backend/seed_data.py` — fixed: User now includes email + bcrypt passwordhash; KhoLuuTru uses `makho` not fake `diachi`; added ADMIN/STAFF roles + UserRole link; wraps in try/finally; repairs existing user if email/passwordhash missing.
+
+### CORS
+- `backend/app/main.py` — restricted `allow_methods` from `["*"]` to `["GET","POST","PUT","DELETE"]`.
+
+### Transaction Safety
+- `backend/app/services/gis_service.py` — removed intermediate `db.commit()` between DELETE and INSERT (now single atomic transaction). Added explicit `db.rollback()` on import failure in gis.py.
+- `backend/app/routers/hoso.py` — added IntegrityError catch on ThuaDat flush race; guard against NoneType after rollback.
+
+### Other
+- `backend/app/routers/auth.py` — added `logger.error()` on bcrypt ValueError (was silent).
+- `backend/test_cols.py` — reads DB URL from `DATABASE_URL` env var instead of hardcoded `postgresql://postgres:123@localhost:5432/vandinh`.
+- `AGENTS.md` — added policy: never push/merge to remote without explicit user permission.
+
+### Remaining Notes (from GLM review)
+- Multi-role truncation in login (see above, not yet fixed).
+- No unique constraint on `ThuaDat(tobando, sothua)` — duplicates possible.
+- Duplicate `Content-Disposition` header in maps/export (frontend + backend both set).
+- `test_cols.py` still has hardcoded fallback password `123456`.
