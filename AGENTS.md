@@ -49,7 +49,6 @@ digital-archive-map-system/
 ├── docs/                     README.md (index), architecture.md, use-cases.md, feature-ownership.md, security.md, changelog.md, references.md
 ├── .opencode/skills/         Project-specific agent skills
 ├── AGENTS.md
-├── CLAUDE.md                 -> @AGENTS.md
 ├── opencode.json             Local OpenCode config (gitignored)
 └── package.json
 ```
@@ -83,9 +82,10 @@ digital-archive-map-system/
 - `@python-backend` — FastAPI patterns (OCR, GIS, async)
 - `@map-parcel` — MapLibre + PostGIS parcel interaction
 - `@db-operations` — PostgreSQL + PostGIS workflow
+- `@caveman` — ultra-compressed responses (also: `@caveman-review`, `@caveman-commit`, `@caveman-compress`, `@caveman-help`)
 
 ### Global Skills (`~/.agents/skills/`)
-- `@caveman` — ultra-compressed responses (also: `@caveman-review`, `@caveman-commit`, `@caveman-compress`, `@caveman-help`)
+- `@caveman` — also available globally (same skill, project copy ensures availability)
 - `@find-skills` — discover and install new agent skills
 
 ## Key Reference Docs

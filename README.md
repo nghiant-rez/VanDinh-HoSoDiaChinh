@@ -200,7 +200,6 @@ digital-archive-map-system/
 │       └── session.ts         # Iron Session configuration
 ├── .env.example               # Environment variables template
 ├── AGENTS.md                  # AI agent guidelines
-├── CLAUDE.md                  # AI agent pointer
 ├── Db/                        # Full database schema reference
 └── README.md                  # This file
 ```

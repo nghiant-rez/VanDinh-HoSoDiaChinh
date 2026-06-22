@@ -16,7 +16,9 @@ Open security issues, severity, owners, and fix plan. Applied fixes live in `cha
 | Location | `.env:2` |
 | Owner | Nghia (manual) |
 
-**Details**: Token `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` was committed to the repo.
+**Details**: A GitHub Personal Access Token was committed to the repo in `.env:2`. The token has been **revoked and regenerated** on 2026-06-22. The `.env` file is gitignored and was never pushed to remote, but the token value was documented in this file (now redacted).
+
+**Token (REVOKED)**: `ghp_REDACTED_2026-06-22`
 
 **Action**:
 1. Revoke at https://github.com/settings/tokens
