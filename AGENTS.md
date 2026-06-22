@@ -102,3 +102,4 @@ digital-archive-map-system/
 - Remote: https://github.com/nghiant-rez/VanDinh-HoSoDiaChinh.git
 - Branch: main (default), feature/per-person branches for active work
 - Strategy: feature branches → PR → main (multi-dev workflow)
+- **NEVER push or merge to remote without explicit user permission.** Stage and commit locally, then ask for review before any `git push` or merge operation.

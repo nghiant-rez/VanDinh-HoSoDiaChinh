@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 
 export async function GET(request: NextRequest) {
-  await requireAuth();
+  const session = await requireAuth();
 
   const { searchParams } = new URL(request.url);
   const params = new URLSearchParams();
@@ -16,7 +16,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const resp = await fetch(
-      `${BACKEND_URL}/api/gis/parcels?${params.toString()}`
+      `${BACKEND_URL}/api/gis/parcels?${params.toString()}`,
+      {
+        headers: {
+          'X-User-Id': session.userId.toString(),
+        },
+      }
     );
 
     if (!resp.ok) {
