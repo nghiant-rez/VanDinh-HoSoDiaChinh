@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from typing import List
 
 from app.dependencies import get_db, require_roles
-from app.models import HoSo, Attachments, ThuaDat
+from app.models import HoSo, Attachments, ThuaDat, User
 from app.schemas import HoSoSearchRequest, HoSoResponse, HoSoCreate, HoSoLineageResponse
 
 router = APIRouter(
@@ -16,7 +17,7 @@ router = APIRouter(
 def search_hoso(
     request: HoSoSearchRequest,
     db: Session = Depends(get_db),
-    user_roles: list = Depends(require_roles(["ADMIN", "STAFF"]))
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     query = db.query(HoSo).options(
         selectinload(HoSo.attachments),
@@ -72,7 +73,7 @@ def search_hoso(
 def get_hoso(
     hoso_id: int,
     db: Session = Depends(get_db),
-    user_roles: list = Depends(require_roles(["ADMIN", "STAFF"]))
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     hoso = db.query(HoSo).options(
         selectinload(HoSo.attachments),
@@ -90,21 +91,18 @@ def get_hoso(
 def create_hoso(
     request: HoSoCreate,
     db: Session = Depends(get_db),
-    user_roles: list = Depends(require_roles(["ADMIN", "STAFF"]))
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
-    # Retrieve current user ID from somewhere. Since require_roles doesn't directly return the user in this setup easily without changing dependencies, we hardcode to 1 for demo or extract from header.
-    # We will just use 1 as createdbyuserid for now.
-    user_id = 1
-    
+    user_id = current_user.id
+
     # Handle ThuaDat
     thuadat_id = None
     if request.tobando and request.sothua:
-        # Check if ThuaDat exists
         thuadat = db.query(ThuaDat).filter(
             ThuaDat.tobando == request.tobando,
             ThuaDat.sothua == request.sothua
         ).first()
-        
+
         if not thuadat:
             thuadat = ThuaDat(
                 tobando=request.tobando,
@@ -112,8 +110,15 @@ def create_hoso(
                 dientich=request.dientich or 0
             )
             db.add(thuadat)
-            db.flush() # flush to get ID
-        
+            try:
+                db.flush()
+            except IntegrityError:
+                db.rollback()
+                thuadat = db.query(ThuaDat).filter(
+                    ThuaDat.tobando == request.tobando,
+                    ThuaDat.sothua == request.sothua
+                ).first()
+
         thuadat_id = thuadat.id
 
     new_hoso = HoSo(
@@ -141,7 +146,7 @@ def create_hoso(
 def get_hoso_lineage(
     hoso_id: int,
     db: Session = Depends(get_db),
-    user_roles: list = Depends(require_roles(["ADMIN", "STAFF"]))
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     current_hoso = db.query(HoSo).filter(HoSo.id == hoso_id).first()
     if not current_hoso:

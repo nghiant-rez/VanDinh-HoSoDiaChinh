@@ -32,7 +32,10 @@ class ImportResponse(BaseModel):
 
 
 @router.get("/status")
-def import_status(db: Session = Depends(get_db)):
+def import_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
+):
     """Check import status and cached data in PostGIS."""
     count = get_parcel_count(db)
     return {
@@ -48,11 +51,9 @@ def import_parcels(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN"])),
 ):
-    """Import parcels from dc*.txt + dc*.dgn files into PostGIS.
-
-    Set limit_files > 0 to import only the first N files (for testing).
-    Default 0 = import all files.
-    """
+    """Import parcels from dc*.txt + dc*.dgn files into PostGIS."""
+    if limit_files < 0:
+        raise HTTPException(status_code=400, detail="limit_files must be >= 0")
     try:
         result = import_all_parcels(db, limit_files=limit_files)
         logger.info(
@@ -84,8 +85,16 @@ def get_parcels(
     to_ban_do: str | None = None,
     limit: int = 5000,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     """Get parcels as GeoJSON from PostGIS, optionally filtered by bbox or search."""
+    if limit < 1 or limit > 50000:
+        raise HTTPException(status_code=400, detail="limit must be between 1 and 50000")
+    if min_lat is not None and not -90 <= min_lat <= 90:
+        raise HTTPException(status_code=400, detail="lat must be between -90 and 90")
+    if min_lon is not None and not -180 <= min_lon <= 180:
+        raise HTTPException(status_code=400, detail="lon must be between -180 and 180")
+
     count = get_parcel_count(db)
     if count == 0:
         raise HTTPException(
@@ -112,6 +121,7 @@ def export_parcels(
     max_lon: float | None = None,
     max_lat: float | None = None,
     db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
 ):
     """Export parcels as downloadable GeoJSON from PostGIS."""
     count = get_parcel_count(db)
@@ -139,6 +149,9 @@ def export_parcels(
 
 
 @router.get("/center")
-def get_center(db: Session = Depends(get_db)):
+def get_center(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
+):
     """Get the calculated center of all parcels from PostGIS."""
     return get_map_center(db)

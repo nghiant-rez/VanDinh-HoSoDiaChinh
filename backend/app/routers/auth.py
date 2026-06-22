@@ -1,19 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+import logging
 import bcrypt
 
 from app.dependencies import get_db
 from app.models import User, Role, UserRole
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api/auth",
     tags=["Auth"]
 )
 
+
 class LoginRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=1, max_length=100)
+    password: str = Field(min_length=1, max_length=128)
 
 class UserResponse(BaseModel):
     id: int
@@ -43,6 +47,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
             user.passwordhash.encode('utf-8')
         )
     except ValueError:
+        logger.error("Invalid password hash format for user %s (id=%s)", user.username, user.id)
         is_match = False
         
     if not is_match:

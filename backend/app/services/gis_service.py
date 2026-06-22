@@ -238,10 +238,10 @@ def ensure_geometry_columns(db: Session) -> None:
 def import_all_parcels(db: Session, limit_files: int = 0) -> ImportResult:
     ensure_geometry_columns(db)
 
-    # Nullify FK references from hoso before clearing parcels
+    # Nullify FK references then clear parcels in single transaction
     db.execute(text("UPDATE hoso SET thuadatid = NULL WHERE thuadatid IS NOT NULL"))
     db.execute(text("DELETE FROM thuadat"))
-    db.commit()
+    # ponytail: no intermediate commit — whole import is atomic
 
     txt_files = scan_all_txt_files()
     if limit_files > 0:
