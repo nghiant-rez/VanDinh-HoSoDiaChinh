@@ -1,0 +1,3 @@
+@echo off
+echo Starting Van Dinh Land Management System...
+powershell -ExecutionPolicy Bypass -File "%~dp0start.ps1"
