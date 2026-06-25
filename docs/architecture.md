@@ -32,33 +32,28 @@ Two call patterns:
 
 ## GIS Module
 
-Source data lives at `E:\Ban Do` (machine-specific; configured via `dgn_source_path` in `config.py`). The current source path is `E:\Ban Do\Ban do V8\BDDC TT Van Dinh` (80 `dc*.txt` + 81 `dc*.dgn` files).
+Source data lives at `E:\Ban Do` (machine-specific; configured via `dgn_source_path` in `config.py`). The current source path is `E:\Ban Do\Ban do V7\BDDC TT Van Dinh` (80 `dc*.txt` + 81 `dc*.dgn` files, V7 format).
 
 Two paired formats per parcel sheet:
 
-- **`.dgn`** (MicroStation DGN) - the bulk: parcel **geometry** (polygons). V8 files are DGNv8 format (not supported by OSGeo4W GDAL; V7 files use old DGN format and parse correctly).
-- **`dc*.txt`** (pipe-delimited) - parcel **attributes + centroids** (so_thua, to_ban_do, dien_tich, loai_dat, mdsd2003, ten_chu, dia_chi, xu_dong). **Currently parsed and stored in PostGIS.**
+- **`.dgn`** (MicroStation DGN, V7 format) - parcel **geometry** (boundaries stored as line segments, polygonized at import time).
+- **`dc*.txt`** (pipe-delimited, TCVN3-encoded) - parcel **attributes + centroids** (so_thua, to_ban_do, dien_tich, loai_dat, mdsd2003, ten_chu, dia_chi, xu_dong). Decoded via `tcvn3_decoder.py` before parsing.
 
 Storage: PostgreSQL + PostGIS (`thuadat` table). Geometry columns:
-- `geom` (POLYGON, SRID 4326) - parcel boundary from DGN (NULL when DGNv8 parsing unavailable).
-- `centroid` (POINT, SRID 4326) - centroid from TXT (always available).
+- `geom` (POLYGON, SRID 4326) - parcel boundary from DGN (polygonized line network).
+- `centroid` (POINT, SRID 4326) - label point from TXT (always available).
 - GIST spatial indexes on both columns.
 
 Import pipeline (`backend/app/services/gis_service.py`):
 1. Scan `dc*.txt` files in `dgn_source_path`.
-2. Parse pipe-delimited rows into `ParcelRecord` (centroid + attributes).
-3. For each TXT file, find corresponding `.dgn` file and parse polygons via `ogr2ogr` (DGN -> GeoJSON with VN-2000 to WGS84 transform).
-4. Match TXT centroids to DGN polygons by spatial containment (shapely `contains`).
-5. Transform all centroids to WGS84 via `gdaltransform`.
+2. Parse pipe-delimited rows via `open_tcvn3` (TCVN3 decode) into `ParcelRecord` (centroid + attributes, sanitized).
+3. Transform all centroids to WGS84 via `gdaltransform`.
+4. For each TXT file, find corresponding `.dgn` file and run `extract_parcel_polygons`: ogr2ogr converts DGN to GeoJSON (VN-2000 to WGS84), LineStrings filtered to parcel centroid area, line network polygonized via `shapely.ops.polygonize`, results filtered by area (200-50000 m2).
+5. Match TXT label points to polygons via greedy 1:1 nearest-distance assignment (`match_parcels_to_polygons`, within 50m).
 6. Batch insert to PostGIS (`ST_GeomFromGeoJSON` for polygons, `ST_MakePoint` for centroids).
 7. Calculate bbox and center via PostGIS aggregates.
 
-Query: `ST_AsGeoJSON(COALESCE(geom, centroid))` - returns polygon if available, otherwise centroid point.
-
-Limitations:
-- DGNv8 files (V8 folder) cannot be parsed - OSGeo4W GDAL only has the old DGN driver. All V8-sourced parcels have centroid only (no polygon geometry).
-- Map shows centroid points, not parcel polygons, until DGNv8 support is added.
-- Fix options: install DGNv8 driver for GDAL, use ODA File Converter, or use V7 DGN files as fallback.
+Query: `ST_AsGeoJSON(COALESCE(geom, centroid))` - returns polygon if available, otherwise centroid point. Frontend renders polygon fill + outline layers for Polygon features, circle layer for Point fallback.
 
 > [!NOTE]
 > The original Dev 1 assignment mentioned "DXF/Shapefile" import. The actual source data contains no `.dxf` or `.shp` files - it is `.dgn` + `.txt`. Scope is corrected to DGN + TXT in `feature-ownership.md`.
