@@ -50,6 +50,7 @@ backend/data/*
 
 # Local OpenCode project config (per-user, not shared)
 opencode.json
+.opencode/skills/
 
 # typescript
 *.tsbuildinfo
