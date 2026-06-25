@@ -11,11 +11,18 @@ from subprocess import run
 from dataclasses import dataclass, field
 from typing import Optional
 
-from shapely.geometry import shape, Point
+from shapely.geometry import shape, Point, LineString, mapping
+from shapely.ops import polygonize, unary_union
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
+SQ_DEG_TO_M2 = 12321000000.0
+PARCEL_MIN_M2 = 200
+PARCEL_MAX_M2 = 50000
+MATCH_MAX_DIST_M = 50
+
 from app.config import settings
+from app.tcvn3_decoder import open_tcvn3, sanitize_text
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +60,7 @@ def _gdal_env() -> dict:
     proj_lib = os.path.join(os.path.dirname(settings.gdal_bin_path), "share", "proj")
     if os.path.isdir(proj_lib):
         env["PROJ_LIB"] = proj_lib
+        env["PROJ_DATA"] = proj_lib
     return env
 
 
@@ -65,7 +73,7 @@ def parse_dc_txt(filepath: str) -> list[ParcelRecord]:
     sheet_num = extract_sheet_number(filepath)
     parcels = []
 
-    with open(filepath, "r", encoding="latin-1") as f:
+    with open_tcvn3(filepath, "r") as f:
         lines = f.readlines()
 
     for line in lines:
@@ -83,11 +91,11 @@ def parse_dc_txt(filepath: str) -> list[ParcelRecord]:
                 tam_x=float(parts[2]),
                 tam_y=float(parts[3]),
                 dien_tich=float(parts[4]),
-                loai_dat=parts[6],
+                loai_dat=sanitize_text(parts[6]),
                 mdsd2003=parts[7],
-                ten_chu=parts[8],
-                dia_chi=parts[9],
-                xu_dong=parts[11] if len(parts) > 11 else "",
+                ten_chu=sanitize_text(parts[8]),
+                dia_chi=sanitize_text(parts[9]),
+                xu_dong=sanitize_text(parts[11]) if len(parts) > 11 else "",
             )
             parcels.append(parcel)
         except (ValueError, IndexError) as e:
@@ -134,7 +142,8 @@ def transform_centroids(parcels: list[ParcelRecord]) -> list[ParcelRecord]:
     return parcels
 
 
-def parse_dgn_polygons(filepath: str) -> list[dict]:
+def _ogr2ogr_to_geojson(filepath: str) -> dict | None:
+    """Convert DGN to GeoJSON via ogr2ogr (VN-2000 -> WGS84). Returns parsed dict or None."""
     ogr2ogr = os.path.join(settings.gdal_bin_path, "ogr2ogr.exe")
     if not os.path.exists(ogr2ogr):
         ogr2ogr = "ogr2ogr"
@@ -145,56 +154,119 @@ def parse_dgn_polygons(filepath: str) -> list[dict]:
 
     try:
         result = run(
-            [
-                ogr2ogr, "-f", "GeoJSON",
-                "-s_srs", settings.source_proj,
-                "-t_srs", "EPSG:4326",
-                temp_path, filepath,
-            ],
-            capture_output=True,
-            text=True,
-            env=_gdal_env(),
+            [ogr2ogr, "-f", "GeoJSON",
+             "-s_srs", settings.source_proj,
+             "-t_srs", "EPSG:4326",
+             temp_path, filepath],
+            capture_output=True, text=True, env=_gdal_env(),
         )
-
         if result.returncode != 0:
             logger.warning("ogr2ogr failed for %s: %s", filepath, result.stderr[:200])
-            return []
+            return None
 
-        with open(temp_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        polygons = []
-        for feature in data.get("features", []):
-            geom = feature.get("geometry", {})
-            if geom.get("type") in ("Polygon", "MultiPolygon"):
-                polygons.append(geom)
-
-        return polygons
+        with open(temp_path, "r", encoding="utf-8", errors="replace") as f:
+            return json.load(f)
     except Exception as e:
         logger.error("Failed to parse DGN %s: %s", filepath, e)
-        return []
+        return None
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
+
+
+def extract_parcel_polygons(
+    filepath: str,
+    ref_lons: list[float],
+    ref_lats: list[float],
+) -> list[dict]:
+    """Extract real parcel boundary polygons from a DGN file.
+
+    DGN files store parcel boundaries as individual line segments, not
+    pre-assembled polygons. This function:
+      1. Converts DGN -> GeoJSON via ogr2ogr (VN-2000 -> WGS84)
+      2. Filters LineStrings to the parcel centroid area (excludes title blocks, legends)
+      3. Polygonizes the line network (shapely.ops.polygonize)
+      4. Filters by reasonable parcel area (200-50000 m2)
+    Returns a list of GeoJSON Polygon geometry dicts.
+    """
+    data = _ogr2ogr_to_geojson(filepath)
+    if not data:
+        return []
+
+    if not ref_lons or not ref_lats:
+        return []
+
+    margin = 0.01
+    min_lon, max_lon = min(ref_lons) - margin, max(ref_lons) + margin
+    min_lat, max_lat = min(ref_lats) - margin, max(ref_lats) + margin
+
+    lines: list[LineString] = []
+    for feature in data.get("features", []):
+        geom = feature.get("geometry", {})
+        if geom.get("type") != "LineString":
+            continue
+        coords = geom.get("coordinates", [])
+        if len(coords) < 2:
+            continue
+        mid = coords[len(coords) // 2]
+        if min_lon <= mid[0] <= max_lon and min_lat <= mid[1] <= max_lat:
+            lines.append(LineString(coords))
+
+    if not lines:
+        return []
+
+    merged = unary_union(lines)
+    polys = list(polygonize(merged))
+
+    min_area = PARCEL_MIN_M2 / SQ_DEG_TO_M2
+    max_area = PARCEL_MAX_M2 / SQ_DEG_TO_M2
+    result = []
+    for p in polys:
+        if min_area < p.area < max_area:
+            result.append(mapping(p))
+    return result
 
 
 def match_parcels_to_polygons(
     parcels: list[ParcelRecord],
     polygons: list[dict],
 ) -> None:
+    """Assign each parcel the nearest polygon (within MATCH_MAX_DIST_M meters).
+
+    Uses 1:1 greedy assignment: each polygon is assigned to at most one parcel.
+    The TXT 'tam_x/tam_y' fields are label points, not geometric centroids, so
+    we use nearest-distance matching instead of containment.
+    """
     if not polygons:
         return
 
     shapely_polys = [shape(p) for p in polygons]
+    max_dist_deg = MATCH_MAX_DIST_M / 111000.0
 
-    for parcel in parcels:
+    # Build (distance, parcel_idx, poly_idx) triples for all candidates
+    candidates = []
+    for pi, parcel in enumerate(parcels):
         if parcel.lon == 0 or parcel.lat == 0:
             continue
-        point = Point(parcel.lon, parcel.lat)
-        for i, poly in enumerate(shapely_polys):
-            if poly.contains(point):
-                parcel.polygon_geojson = json.dumps(polygons[i])
-                break
+        pt = Point(parcel.lon, parcel.lat)
+        for gi, poly in enumerate(shapely_polys):
+            if poly.contains(pt):
+                candidates.append((0.0, pi, gi))
+            else:
+                d = pt.distance(poly)
+                if d < max_dist_deg:
+                    candidates.append((d, pi, gi))
+
+    # Greedy 1:1 assignment: shortest distance first
+    candidates.sort()
+    assigned_parcels = set()
+    assigned_polys = set()
+    for dist, pi, gi in candidates:
+        if pi in assigned_parcels or gi in assigned_polys:
+            continue
+        parcels[pi].polygon_geojson = json.dumps(polygons[gi])
+        assigned_parcels.add(pi)
+        assigned_polys.add(gi)
 
 
 def scan_all_txt_files() -> list[str]:
@@ -249,6 +321,7 @@ def import_all_parcels(db: Session, limit_files: int = 0) -> ImportResult:
     result = ImportResult(total_txt_files=len(txt_files))
 
     all_parcels = []
+    dgn_paths = []
     for txt_path in txt_files:
         try:
             parcels = parse_dc_txt(txt_path)
@@ -257,13 +330,23 @@ def import_all_parcels(db: Session, limit_files: int = 0) -> ImportResult:
             dgn_path = txt_path.replace(".txt", ".dgn")
             if os.path.exists(dgn_path):
                 result.total_dgn_files += 1
-                polygons = parse_dgn_polygons(dgn_path)
-                match_parcels_to_polygons(parcels, polygons)
+                dgn_paths.append((parcels, dgn_path))
         except Exception as e:
             result.errors.append({"file": os.path.basename(txt_path), "error": str(e)})
             logger.error("Failed to parse %s: %s", txt_path, e)
 
     all_parcels = transform_centroids(all_parcels)
+
+    ref_lons = [p.lon for p in all_parcels if p.lon != 0]
+    ref_lats = [p.lat for p in all_parcels if p.lat != 0]
+    for parcels, dgn_path in dgn_paths:
+        try:
+            polygons = extract_parcel_polygons(dgn_path, ref_lons, ref_lats)
+            match_parcels_to_polygons(parcels, polygons)
+        except Exception as e:
+            result.errors.append({"file": os.path.basename(dgn_path), "error": str(e)})
+            logger.error("Failed to extract polygons from %s: %s", dgn_path, e)
+
     result.total_parcels = len(all_parcels)
     result.parcels_with_polygon = sum(1 for p in all_parcels if p.polygon_geojson)
 

@@ -43,7 +43,7 @@ export default function LoginPage() {
           Đăng nhập hệ thống
         </h2>
         <p className="mt-2 text-center text-sm text-text-secondary">
-          Quản lý Hồ sơ Đất đai Vạn Đình
+          Quản lý Hồ sơ Đất đai Vân Đình
         </p>
       </div>
 

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hệ thống Lưu trữ Vạn Đình",
-  description: "Hệ thống quản lý hồ sơ và bản đồ số xã Vạn Đình",
+  title: "Hệ thống Lưu trữ Vân Đình",
+  description: "Hệ thống quản lý hồ sơ và bản đồ số xã Vân Đình",
 };
 
 export default function RootLayout({

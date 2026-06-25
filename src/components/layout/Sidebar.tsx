@@ -19,7 +19,7 @@ export function Sidebar() {
     <div className="w-64 bg-bg-sidebar border-r border-border h-full flex flex-col">
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-bold text-primary">Hệ thống Lưu trữ</h1>
-        <p className="text-sm text-text-secondary">Xã Vạn Đình</p>
+        <p className="text-sm text-text-secondary">Xã Vân Đình</p>
       </div>
 
       <nav className="flex-1 p-4 space-y-2">

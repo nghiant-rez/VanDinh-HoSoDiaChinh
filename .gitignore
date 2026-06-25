@@ -38,6 +38,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+venv/
 
 # backend uploads
 backend/data/*
@@ -49,6 +50,7 @@ backend/data/*
 
 # Local OpenCode project config (per-user, not shared)
 opencode.json
+.opencode/skills/
 
 # typescript
 *.tsbuildinfo

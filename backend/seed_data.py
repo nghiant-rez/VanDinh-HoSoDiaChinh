@@ -102,7 +102,7 @@ try:
             "mahoso": "HS-2024-003",
             "tenhoso": "Dự án quy hoạch khu dân cư mới xóm Đồng",
             "loaihosoid": 3,
-            "chusohuu": "UBND Xã Vạn Đình",
+            "chusohuu": "UBND Xã Vân Đình",
             "kholuutruid": kho.id,
             "keluutruid": ke.id,
             "tangluutruid": tang.id,

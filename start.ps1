@@ -65,5 +65,5 @@ Write-Host "  Frontend:  http://localhost:3000" -ForegroundColor Yellow
 Write-Host "  Backend:   http://localhost:8000" -ForegroundColor Yellow
 Write-Host "  Login:     http://localhost:3000/login" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Press any key to exit this launcher..."
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Write-Host "Launcher exiting — service windows will persist. Safe to close this window." -ForegroundColor DarkGray
+Start-Sleep -Seconds 3
