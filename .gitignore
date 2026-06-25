@@ -38,6 +38,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+venv/
 
 # backend uploads
 backend/data/*

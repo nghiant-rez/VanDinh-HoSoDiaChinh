@@ -22,6 +22,33 @@ const LAND_COLORS: Record<string, string> = {
   CQP: '#64748b',  // Quoc phong - slate
 };
 
+function escapeHtml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function getFeatureCenter(feature: GeoJSON.Feature): [number, number] | null {
+  const geom = feature.geometry;
+  if (!geom) return null;
+  if (geom.type === 'Point') {
+    return geom.coordinates as [number, number];
+  }
+  if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
+    const ring = geom.type === 'Polygon'
+      ? geom.coordinates[0]
+      : geom.coordinates[0]?.[0];
+    if (!ring || ring.length === 0) return null;
+    let lon = 0, lat = 0;
+    for (const [x, y] of ring) { lon += x; lat += y; }
+    return [lon / ring.length, lat / ring.length];
+  }
+  return null;
+}
+
 interface MapViewProps {
   geojsonData: GeoJSON.FeatureCollection | null;
   onParcelClick?: (properties: Record<string, unknown>) => void;
@@ -64,7 +91,7 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
             type: 'raster',
             source: 'osm',
             minzoom: 0,
-            maxzoom: 22,
+            maxzoom: 19,
           },
         ],
       },
@@ -99,8 +126,8 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
 
     const addLayer = () => {
       // Remove existing source/layers
-      if (m.getLayer('parcels-circle')) m.removeLayer('parcels-circle');
-      if (m.getLayer('parcels-label')) m.removeLayer('parcels-label');
+      const layers = ['parcels-fill', 'parcels-fill-outline', 'parcels-circle', 'parcels-label'];
+      layers.forEach((id) => { if (m.getLayer(id)) m.removeLayer(id); });
       if (m.getSource('parcels')) m.removeSource('parcels');
 
       // Add GeoJSON source
@@ -109,11 +136,53 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
         data: geojsonData,
       });
 
-      // Circle layer colored by land type
+      const polyFilter: maplibregl.FilterSpecification = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']];
+      const pointFilter: maplibregl.FilterSpecification = ['==', ['geometry-type'], 'Point'];
+
+      // Polygon fill layer
+      m.addLayer({
+        id: 'parcels-fill',
+        type: 'fill',
+        source: 'parcels',
+        filter: polyFilter,
+        paint: {
+          'fill-color': [
+            'match',
+            ['get', 'mdsd2003'],
+            'LUC', LAND_COLORS.LUC,
+            'BHK', LAND_COLORS.BHK,
+            'DGT', LAND_COLORS.DGT,
+            'DTL', LAND_COLORS.DTL,
+            'ODT', LAND_COLORS.ODT,
+            'CLN', LAND_COLORS.CLN,
+            'NTS', LAND_COLORS.NTS,
+            'TMD', LAND_COLORS.TMD,
+            'SKC', LAND_COLORS.SKC,
+            'CQP', LAND_COLORS.CQP,
+            '#94a3b8',
+          ],
+          'fill-opacity': 0.4,
+        },
+      });
+
+      // Polygon outline
+      m.addLayer({
+        id: 'parcels-fill-outline',
+        type: 'line',
+        source: 'parcels',
+        filter: polyFilter,
+        paint: {
+          'line-color': '#1e293b',
+          'line-width': 2,
+        },
+      });
+
+      // Circle layer for point-only parcels
       m.addLayer({
         id: 'parcels-circle',
         type: 'circle',
         source: 'parcels',
+        filter: pointFilter,
         paint: {
           'circle-radius': [
             'interpolate',
@@ -163,62 +232,83 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
         },
       });
 
-      // Click handler
-      m.on('click', 'parcels-circle', (e) => {
+      // Click handler (works on fill + circle layers)
+      const clickHandler = (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
         if (!e.features || e.features.length === 0) return;
         const feature = e.features[0];
         const props = feature.properties || {};
-        const coords = (feature.geometry as GeoJSON.Point).coordinates;
+        const feat = feature as unknown as GeoJSON.Feature;
+        const center = getFeatureCenter(feat);
+        if (!center) return;
+
+        const area = props.dien_tich
+          ? parseFloat(props.dien_tich).toLocaleString('vi-VN', { maximumFractionDigits: 1 })
+          : '0';
 
         const html = `
-          <div style="font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.5;">
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #1e293b;">
-              Thua ${props.so_thua} - To ${props.to_ban_do}
+          <div style="font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.6;">
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 8px; color: #1e293b; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px;">
+              Thừa ${escapeHtml(props.so_thua)} - Tờ ${escapeHtml(props.to_ban_do)}
             </div>
-            <div><b>Dien tich:</b> ${props.dien_tich} m&sup2;</div>
-            <div><b>Loai dat:</b> ${props.loai_dat} / ${props.mdsd2003}</div>
-            <div><b>Chu SD:</b> ${props.ten_chu}</div>
-            <div><b>Dia chi:</b> ${props.dia_chi}</div>
-            ${props.xu_dong ? `<div><b>Xu dong:</b> ${props.xu_dong}</div>` : ''}
+            <div style="background: #f0fdf4; padding: 8px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #22c55e;">
+              <div style="font-size: 12px; color: #15803d; margin-bottom: 2px;">Diện tích</div>
+              <div style="font-weight: 700; font-size: 18px; color: #166534;">${escapeHtml(area)} m²</div>
+            </div>
+            <div style="margin-bottom: 4px;"><b>Loại đất:</b> ${escapeHtml(props.loai_dat) || escapeHtml(props.mdsd2003) || 'N/A'}</div>
+            ${props.ten_chu ? `<div style="margin-bottom: 4px;"><b>Chủ sử dụng:</b> ${escapeHtml(props.ten_chu)}</div>` : ''}
+            ${props.dia_chi ? `<div style="margin-bottom: 4px;"><b>Địa chỉ:</b> ${escapeHtml(props.dia_chi)}</div>` : ''}
+            ${props.xu_dong ? `<div style="margin-bottom: 4px;"><b>Xứ đồng:</b> ${escapeHtml(props.xu_dong)}</div>` : ''}
           </div>
         `;
 
         popup.current
-          ?.setLngLat(coords as [number, number])
+          ?.setLngLat(center)
           .setHTML(html)
           .addTo(m);
 
         handleParcelClick(props);
-      });
+      };
+
+      m.on('click', 'parcels-fill', clickHandler);
+      m.on('click', 'parcels-circle', clickHandler);
 
       // Hover cursor
-      m.on('mouseenter', 'parcels-circle', () => {
-        m.getCanvas().style.cursor = 'pointer';
-      });
-      m.on('mouseleave', 'parcels-circle', () => {
-        m.getCanvas().style.cursor = '';
-      });
+      const cursorOn = () => { m.getCanvas().style.cursor = 'pointer'; };
+      const cursorOff = () => { m.getCanvas().style.cursor = ''; };
+      m.on('mouseenter', 'parcels-fill', cursorOn);
+      m.on('mouseleave', 'parcels-fill', cursorOff);
+      m.on('mouseenter', 'parcels-circle', cursorOn);
+      m.on('mouseleave', 'parcels-circle', cursorOff);
 
       // Auto-fit map bounds to show all parcels
       if (geojsonData.features.length > 0) {
         const bounds = new maplibregl.LngLatBounds();
         geojsonData.features.forEach((f) => {
-          const coords = (f.geometry as GeoJSON.Point).coordinates;
-          bounds.extend(coords as [number, number]);
+          const center = getFeatureCenter(f);
+          if (center) bounds.extend(center);
         });
-        m.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+        if (bounds.isEmpty() === false) {
+          m.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+        }
+      }
+    };
+
+    const onStyleData = () => {
+      if (m.isStyleLoaded() && !m.getLayer('parcels-circle')) {
+        addLayer();
+        m.off('styledata', onStyleData);
       }
     };
 
     if (m.isStyleLoaded()) {
       addLayer();
     } else {
-      m.on('styledata', () => {
-        if (m.isStyleLoaded() && !m.getLayer('parcels-circle')) {
-          addLayer();
-        }
-      });
+      m.on('styledata', onStyleData);
     }
+
+    return () => {
+      m.off('styledata', onStyleData);
+    };
   }, [geojsonData, handleParcelClick]);
 
   return <div ref={mapContainer} className="w-full h-full" />;

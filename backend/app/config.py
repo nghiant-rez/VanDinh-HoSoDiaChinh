@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     ocr_lang: str = "vietnamese"
 
     # GIS / DGN data source
-    dgn_source_path: str = r"E:\Ban Do\Ban do V8\BDDC TT Van Dinh"
+    dgn_source_path: str = r"E:\Ban Do\Ban do V7\BDDC TT Van Dinh"
     gdal_bin_path: str = r"E:\OSGeo4W\bin"
 
     # VN-2000 TM-3 with central meridian 105.00 degrees
