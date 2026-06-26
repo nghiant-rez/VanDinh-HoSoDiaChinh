@@ -72,9 +72,9 @@ def sanitize_text(text: str) -> str:
     if not text:
         return text
     s = text.strip()
+    s = s.replace('\x00', '').replace('\r', '')
     if not s:
         return s
-    s = s.replace('\x00', '').replace('\r', '')
     if s[0].islower():
         s = s[0].upper() + s[1:]
     return s
