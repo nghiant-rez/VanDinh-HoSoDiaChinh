@@ -99,9 +99,23 @@ digital-archive-map-system/
 - `docs/references.md` — Jira, Figma links
 - `Db/database.md` — full PostgreSQL schema reference
 
+## Before Coding
+1. **Read `docs/feature-ownership.md`** — check who owns the UC, avoid conflicts
+2. **Read `docs/security.md`** — check open issues for files you're touching
+3. **Coordinate in team chat** before editing `backend/app/dependencies.py` or `backend/app/config.py` (conflict hotspots)
+
 ## Version Control
+
+### Branch Strategy
+- Format: `<owner>/<type>/<description>` (e.g., `nghia/fix/dgn-polygon`, `huy/feat/storage-tree`)
+- Personal branches (`Nghia`, `Huy`) deprecated — use feature branches off `main`
+- Unassigned work (UC-05, UC-08): branch from `main`, not personal branches
+
+### Git Workflow
 - Remote: https://github.com/nghiant-rez/VanDinh-HoSoDiaChinh.git
-- Branch: main (default), feature/per-person branches for active work
-- Strategy: feature branches → PR → main (multi-dev workflow)
+- Base branch: always `main`
+- Strategy: feature branch → PR → review → squash merge to main
+- **Review required:** tag other dev before merge
+- **Merge method:** squash preferred (keeps `main` history clean for changelog)
 - **NEVER push or merge to remote without explicit user permission.** Stage and commit locally, then ask for review before any `git push` or merge operation.
 
