@@ -25,6 +25,7 @@ digital-archive-map-system/
 │   │   ├── models.py         SQLAlchemy models (User, Role, KhoLuuTru...)
 │   │   ├── schemas.py        Pydantic schemas
 │   │   ├── dependencies.py   get_db, get_current_user, require_roles
+│   │   ├── tcvn3_decoder.py  TCVN3 (ABC) to Unicode decoder + sanitize_text
 │   │   ├── routers/
 │   │   │   ├── auth.py       POST /api/auth/login
 │   │   │   ├── gis.py        POST /api/gis/import
