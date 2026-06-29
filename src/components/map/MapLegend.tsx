@@ -33,7 +33,7 @@ export function MapLegend({ parcelCount }: MapLegendProps) {
           Chu giai
           {parcelCount > 0 && (
             <span className="ml-2 text-xs font-normal text-text-secondary">
-              ({parcelCount.toLocaleString()} thua)
+              ({parcelCount.toLocaleString('vi-VN')} thua)
             </span>
           )}
         </span>

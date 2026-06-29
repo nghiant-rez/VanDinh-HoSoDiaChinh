@@ -171,10 +171,10 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                       Nhap thanh cong!
                     </div>
                     <div className="text-xs text-text-secondary space-y-0.5">
-                      <div>{importResult.total_parcels.toLocaleString()} thua dat</div>
+                      <div>{importResult.total_parcels.toLocaleString('vi-VN')} thua dat</div>
                       <div>{importResult.total_txt_files} file txt + {importResult.total_dgn_files} file dgn da xu ly</div>
                       {importResult.parcels_with_polygon > 0 && (
-                        <div>{importResult.parcels_with_polygon.toLocaleString()} thua dat co hinh da</div>
+                        <div>{importResult.parcels_with_polygon.toLocaleString('vi-VN')} thua dat co hinh da</div>
                       )}
                       {importResult.errors.length > 0 && (
                         <div className="text-warning">
@@ -198,7 +198,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                 {/* Current count */}
                 {parcelCount > 0 && !importResult && (
                   <div className="text-xs text-text-secondary text-center">
-                    Hien thi {parcelCount.toLocaleString()} thua dat tren ban do
+                    Hien thi {parcelCount.toLocaleString('vi-VN')} thua dat tren ban do
                   </div>
                 )}
               </div>

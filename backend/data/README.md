@@ -6,7 +6,7 @@
 
 - Source: First 5 cadastral map files (`dc*.txt`) from `E:\Ban Do`
 - Coordinate system: WGS84 (EPSG:4326), transformed from VN-2000 TM-3
-- Geometry: Point centroids only (DGNv8 polygon import not yet supported)
+- Geometry: Point centroids + polygon boundaries (from V7 DGN via polygonize)
 - Size: ~48 KB
 - Use case: Load this into PostGIS for frontend testing without running the full 80-file import
 

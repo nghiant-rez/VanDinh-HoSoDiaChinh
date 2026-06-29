@@ -227,7 +227,7 @@ The system implements 10 use cases (UC-01 to UC-10):
 | UC-01 | Login system | ✅ Complete |
 | UC-02 | Account management | ⚠️ Partial |
 | UC-03 | Record entry | 🔄 In progress |
-| UC-04 | Digital map import | 🔄 In progress |
+| UC-04 | Digital map import | ✅ Complete |
 | UC-05 | Record search | 🔄 In progress |
 | UC-06 | Find parcel on map | 🔄 In progress |
 | UC-07 | Export/print records | 🔄 In progress |

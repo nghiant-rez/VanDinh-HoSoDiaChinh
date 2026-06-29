@@ -2,6 +2,33 @@
 
 Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
 
+## 2026-06-29 — DGN Polygon Extraction + TCVN3 Decoder + UI Fixes
+
+### DGN Polygon Extraction (UC-04 core fix)
+- `backend/app/config.py` — `dgn_source_path` switched from V8 (DGNv8, unreadable by installed GDAL) to V7 folder.
+- `backend/app/services/gis_service.py` — rewrote `parse_dgn_polygons` as `extract_parcel_polygons`: DGN line segments polygonized via `shapely.ops.polygonize` (DGN stores boundaries as lines, not pre-built polygons). Lines filtered to parcel centroid area, results filtered by area (200-50000 m2).
+- `backend/app/services/gis_service.py` — replaced containment matching with greedy 1:1 nearest-distance matching. TXT `tam_x/tam_y` are label points, not geometric centroids.
+- `backend/app/services/gis_service.py` — fixed execution order: `transform_centroids` now runs before polygon matching.
+- `backend/app/services/gis_service.py` — `_gdal_env()` now sets `PROJ_DATA` alongside `PROJ_LIB`.
+- `backend/app/services/gis_service.py` — ogr2ogr GeoJSON read uses `errors="replace"` for TCVN3 bytes.
+- Result: 5-file demo import yields 700 parcels, 630 with unique polygon boundaries (90% match rate), 0 errors.
+
+### TCVN3 Decoder
+- `backend/app/tcvn3_decoder.py` (new) — rewrote `TCVN3_MAP` with 33 byte corrections verified from source file header row analysis. Added `sanitize_text()` and `open_tcvn3()`.
+
+### Frontend Map Rendering
+- `src/components/map/MapView.tsx` — added polygon fill + outline layers. Circle layer filtered to Point-only fallback. Styling: `fill-opacity: 0.4`, `line-width: 2`. Fixed `styledata` listener leak. Added `escapeHtml` for popup values. Fixed `maxZoom` 22 to 19.
+
+### UI String Fixes
+- "Van Dinh" corrected to "Van Dinh" in Sidebar, login, layout, seed_data.
+- MapView popup label "Xu dung" corrected to "Xu dong".
+
+### Bug Fix
+- `backend/app/tcvn3_decoder.py` — `sanitize_text` crash on control-char-only fields (move `replace` before empty check).
+
+### Resolved: DGNv8 Not Supported
+- Previously recorded as a known issue (see 2026-06-18 entry). Resolved by switching to V7 source path and polygonizing line networks.
+
 ## 2026-06-18 - DeepSeek Fixes Pass
 
 ### Frontend (TypeScript/React)
