@@ -9,7 +9,7 @@ $dockerExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 if (Test-Path $dockerExe) {
     $dockerProc = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
     if (-not $dockerProc) {
-        Write-Host "[0/3] Starting Docker Desktop..." -ForegroundColor Cyan
+        Write-Host "[0/4] Starting Docker Desktop..." -ForegroundColor Cyan
         Start-Process $dockerExe
         Write-Host "       Waiting for Docker to initialize (up to 60s)..." -ForegroundColor DarkGray
         $timeout = 60
@@ -26,34 +26,56 @@ if ($dockerPg) {
     # Docker container exists — make sure it's running
     $running = docker ps --filter "name=$dockerPg" --format "{{.Names}}" 2>$null
     if (-not $running) {
-        Write-Host "[1/3] Starting PostgreSQL container '$dockerPg'..." -ForegroundColor Cyan
+        Write-Host "[1/4] Starting PostgreSQL container '$dockerPg'..." -ForegroundColor Cyan
         docker start $dockerPg
         Start-Sleep -Seconds 3
     } else {
-        Write-Host "[1/3] PostgreSQL container already running" -ForegroundColor Green
+        Write-Host "[1/4] PostgreSQL container already running" -ForegroundColor Green
     }
 } else {
     # Fall back to local Windows service
     $pgSvc = Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue | Where-Object Status -ne "Running"
     if ($pgSvc) {
-        Write-Host "[1/3] Starting PostgreSQL service..." -ForegroundColor Cyan
+        Write-Host "[1/4] Starting PostgreSQL service..." -ForegroundColor Cyan
         Start-Service $pgSvc.Name
         Start-Sleep -Seconds 2
     } else {
-        Write-Host "[1/3] PostgreSQL running (service or already up)" -ForegroundColor Green
+        Write-Host "[1/4] PostgreSQL running (service or already up)" -ForegroundColor Green
     }
 }
 
-# 2. Start FastAPI backend in new window
-Write-Host "[2/3] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
+# 2. Ensure Python venv and dependencies
+Write-Host "[2/4] Checking Python environment..." -ForegroundColor Cyan
+if (-not (Test-Path "$backendDir\venv\Scripts\Activate.ps1")) {
+    Write-Host "       Creating Python venv..." -ForegroundColor Yellow
+    python -m venv "$backendDir\venv"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "       ERROR: Failed to create venv. Is Python installed?" -ForegroundColor Red
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        exit 1
+    }
+}
+if (-not (Test-Path "$backendDir\venv\Scripts\uvicorn.exe")) {
+    Write-Host "       Installing Python dependencies..." -ForegroundColor Yellow
+    & "$backendDir\venv\Scripts\pip.exe" install -r "$backendDir\requirements.txt"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "       ERROR: pip install failed. Check network and retry." -ForegroundColor Red
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        exit 1
+    }
+}
+Write-Host "       Python environment ready" -ForegroundColor Green
+
+# 3. Start FastAPI backend in new window
+Write-Host "[3/4] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
 cd '$backendDir'
-if (Test-Path venv\Scripts\Activate.ps1) { .\venv\Scripts\Activate.ps1 }
+.\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 "@
 
-# 3. Start Next.js frontend in new window
-Write-Host "[3/3] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
+# 4. Start Next.js frontend in new window
+Write-Host "[4/4] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
 cd '$root'
 npm run dev
