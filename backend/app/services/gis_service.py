@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 SQ_DEG_TO_M2 = 12321000000.0
-PARCEL_MIN_M2 = 200
+PARCEL_MIN_M2 = 5
 PARCEL_MAX_M2 = 50000
 MATCH_MAX_DIST_M = 50
 
@@ -267,6 +267,28 @@ def match_parcels_to_polygons(
         parcels[pi].polygon_geojson = json.dumps(polygons[gi])
         assigned_parcels.add(pi)
         assigned_polys.add(gi)
+
+    # Fallback: parcels without a polygon get a square estimated from recorded area.
+    # This handles DGN linework gaps (unclosed polygons) that polygonize misses.
+    # ponytail: approximate square, not the real boundary — marked by geometry source
+    for pi, parcel in enumerate(parcels):
+        if pi in assigned_parcels or parcel.lon == 0 or parcel.lat == 0:
+            continue
+        if parcel.dien_tich <= 0:
+            continue
+        side_deg = (parcel.dien_tich ** 0.5) / 111000.0
+        half = side_deg / 2.0
+        poly = {
+            "type": "Polygon",
+            "coordinates": [[
+                [parcel.lon - half, parcel.lat - half],
+                [parcel.lon + half, parcel.lat - half],
+                [parcel.lon + half, parcel.lat + half],
+                [parcel.lon - half, parcel.lat + half],
+                [parcel.lon - half, parcel.lat - half],
+            ]],
+        }
+        parcel.polygon_geojson = json.dumps(poly)
 
 
 def scan_all_txt_files() -> list[str]:

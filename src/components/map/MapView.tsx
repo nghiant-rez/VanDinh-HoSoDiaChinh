@@ -92,11 +92,15 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
             source: 'osm',
             minzoom: 0,
             maxzoom: 19,
+            paint: {
+              'raster-opacity': 0.7,
+            },
           },
         ],
       },
       center: VAN_DINH_CENTER,
       zoom: VAN_DINH_ZOOM,
+      maxZoom: 19,
     });
 
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
@@ -106,7 +110,7 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
     );
 
     popup.current = new maplibregl.Popup({
-      closeButton: true,
+      closeButton: false,
       closeOnClick: false,
       maxWidth: '320px',
     });
@@ -246,18 +250,19 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
           : '0';
 
         const html = `
-          <div style="font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.6;">
-            <div style="font-weight: 700; font-size: 15px; margin-bottom: 8px; color: #1e293b; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px;">
-              Thừa ${escapeHtml(props.so_thua)} - Tờ ${escapeHtml(props.to_ban_do)}
+          <div style="font-family: system-ui, sans-serif; font-size: 12px; line-height: 1.4; padding: 6px 8px; position: relative;">
+            <button id="popup-close" style="position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border: none; border-radius: 3px; background: #f1f5f9; color: #64748b; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#1e293b';" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b';" aria-label="Đóng">&times;</button>
+            <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #1e293b; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; padding-right: 22px;">
+              Thửa ${escapeHtml(props.so_thua)} - Tờ ${escapeHtml(props.to_ban_do)}
             </div>
-            <div style="background: #f0fdf4; padding: 8px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #22c55e;">
-              <div style="font-size: 12px; color: #15803d; margin-bottom: 2px;">Diện tích</div>
-              <div style="font-weight: 700; font-size: 18px; color: #166534;">${escapeHtml(area)} m²</div>
+            <div style="background: #f0fdf4; padding: 4px; border-radius: 2px; margin-bottom: 4px; border-left: 3px solid #22c55e;">
+              <div style="font-size: 10px; color: #15803d; margin-bottom: 0;">Diện tích</div>
+              <div style="font-weight: 700; font-size: 14px; color: #166534;">${escapeHtml(area)} m²</div>
             </div>
-            <div style="margin-bottom: 4px;"><b>Loại đất:</b> ${escapeHtml(props.loai_dat) || escapeHtml(props.mdsd2003) || 'N/A'}</div>
-            ${props.ten_chu ? `<div style="margin-bottom: 4px;"><b>Chủ sử dụng:</b> ${escapeHtml(props.ten_chu)}</div>` : ''}
-            ${props.dia_chi ? `<div style="margin-bottom: 4px;"><b>Địa chỉ:</b> ${escapeHtml(props.dia_chi)}</div>` : ''}
-            ${props.xu_dong ? `<div style="margin-bottom: 4px;"><b>Xứ đồng:</b> ${escapeHtml(props.xu_dong)}</div>` : ''}
+            <div style="margin-bottom: 2px; font-size: 11px;"><b>Loại đất:</b> ${escapeHtml(props.loai_dat) || escapeHtml(props.mdsd2003) || 'N/A'}</div>
+            ${props.ten_chu ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Chủ sử dụng:</b> ${escapeHtml(props.ten_chu)}</div>` : ''}
+            ${props.dia_chi ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Địa chỉ:</b> ${escapeHtml(props.dia_chi)}</div>` : ''}
+            ${props.xu_dong ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Xứ đồng:</b> ${escapeHtml(props.xu_dong)}</div>` : ''}
           </div>
         `;
 
@@ -265,6 +270,11 @@ export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
           ?.setLngLat(center)
           .setHTML(html)
           .addTo(m);
+
+        const closeBtn = document.getElementById('popup-close');
+        if (closeBtn) {
+          closeBtn.onclick = () => popup.current?.remove();
+        }
 
         handleParcelClick(props);
       };

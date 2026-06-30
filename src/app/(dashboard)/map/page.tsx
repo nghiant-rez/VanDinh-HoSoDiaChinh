@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { MapView } from '@/components/map/MapView';
 import { MapToolsPanel } from '@/components/map/MapToolsPanel';
 import { MapLegend } from '@/components/map/MapLegend';
 
 export default function MapPage() {
+  const searchParams = useSearchParams();
+  const autoImport = searchParams.get('test') === '1';
   const [geojsonData, setGeojsonData] = useState<GeoJSON.FeatureCollection | null>(null);
   const [parcelCount, setParcelCount] = useState(0);
 
@@ -15,7 +18,6 @@ export default function MapPage() {
   }, []);
 
   const handleParcelClick = useCallback((properties: Record<string, unknown>) => {
-    // Future: open detail panel
     console.log('Parcel clicked:', properties);
   }, []);
 
@@ -26,6 +28,7 @@ export default function MapPage() {
         <MapToolsPanel
           onImportComplete={handleImportComplete}
           parcelCount={parcelCount}
+          autoImport={autoImport ? 5 : 0}
         />
         <MapLegend parcelCount={parcelCount} />
       </div>

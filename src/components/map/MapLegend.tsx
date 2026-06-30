@@ -4,16 +4,16 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const LAND_TYPES = [
-  { code: 'LUC', label: 'Dat lua nuoc', color: '#22c55e' },
-  { code: 'ODT', label: 'Dat o', color: '#ef4444' },
-  { code: 'BHK', label: 'Dat bang hoang', color: '#f59e0b' },
-  { code: 'CLN', label: 'Cay lau nam', color: '#84cc16' },
-  { code: 'DGT', label: 'Giao thong', color: '#6b7280' },
-  { code: 'DTL', label: 'Thuy loi', color: '#3b82f6' },
-  { code: 'NTS', label: 'Nuoi trong TS', color: '#06b6d4' },
-  { code: 'TMD', label: 'Thuong mai DV', color: '#a855f7' },
-  { code: 'SKC', label: 'San xuat KD', color: '#f97316' },
-  { code: 'CQP', label: 'Quoc phong', color: '#64748b' },
+  { code: 'LUC', label: 'Đất lúa nước', color: '#22c55e' },
+  { code: 'ODT', label: 'Đất ở', color: '#ef4444' },
+  { code: 'BHK', label: 'Đất bằng hoang', color: '#f59e0b' },
+  { code: 'CLN', label: 'Cây lâu năm', color: '#84cc16' },
+  { code: 'DGT', label: 'Giao thông', color: '#6b7280' },
+  { code: 'DTL', label: 'Thủy lợi', color: '#3b82f6' },
+  { code: 'NTS', label: 'Nuôi trồng thủy sản', color: '#06b6d4' },
+  { code: 'TMD', label: 'Thương mại dịch vụ', color: '#a855f7' },
+  { code: 'SKC', label: 'Sản xuất kinh doanh', color: '#f97316' },
+  { code: 'CQP', label: 'Quốc phòng', color: '#64748b' },
 ];
 
 interface MapLegendProps {
@@ -30,10 +30,10 @@ export function MapLegend({ parcelCount }: MapLegendProps) {
         className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-text-primary hover:bg-bg-main transition-colors"
       >
         <span>
-          Chu giai
+          Chú giải
           {parcelCount > 0 && (
             <span className="ml-2 text-xs font-normal text-text-secondary">
-              ({parcelCount.toLocaleString('vi-VN')} thua)
+              ({parcelCount.toLocaleString('vi-VN')} thửa)
             </span>
           )}
         </span>
