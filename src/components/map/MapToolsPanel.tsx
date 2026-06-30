@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Upload, Download, Loader2, CheckCircle2, AlertCircle, Database, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImportResult {
@@ -16,14 +16,16 @@ interface ImportResult {
 interface MapToolsPanelProps {
   onImportComplete?: (data: GeoJSON.FeatureCollection) => void;
   parcelCount: number;
+  autoImport?: number;
 }
 
-export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelProps) {
+export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }: MapToolsPanelProps) {
   const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const autoImported = useRef(false);
 
   const handleImport = async (limitFiles: number = 0) => {
     setImporting(true);
@@ -67,6 +69,13 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
     }
   };
 
+  useEffect(() => {
+    if (autoImport > 0 && !autoImported.current) {
+      autoImported.current = true;
+      handleImport(autoImport);
+    }
+  }, [autoImport]);
+
   const handleExport = async () => {
     try {
       const resp = await fetch('/api/maps/export');
@@ -106,7 +115,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                 }`}
                 onClick={() => setActiveTab('import')}
               >
-                Nhap du lieu
+                Nhập dữ liệu
               </button>
               <button
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
@@ -116,7 +125,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                 }`}
                 onClick={() => setActiveTab('export')}
               >
-                Xuat du lieu
+                Xuất dữ liệu
               </button>
             </div>
 
@@ -125,16 +134,16 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
               <div className="p-4 space-y-4">
                 <div className="text-sm text-text-secondary">
                   <Database className="w-4 h-4 inline mr-1.5" />
-                  Nhap du lieu thua dat tu{' '}
+                  Nhập dữ liệu thửa đất từ{' '}
                   <span className="font-mono text-xs bg-bg-main px-1.5 py-0.5 rounded">
                     E:\Ban Do
                   </span>
                 </div>
 
                 <div className="text-xs text-text-secondary bg-bg-main rounded-lg p-3 space-y-1">
-                  <div>80 file dc*.txt (ban do dia chinh)</div>
-                  <div>He toa do VN-2000 TM-3 CM=105.00</div>
-                  <div>Chuyen doi sang WGS84 tu dong</div>
+                  <div>80 file dc*.txt (bản đồ địa chính)</div>
+                  <div>Hệ tọa độ VN-2000 TM-3 CM=105.00</div>
+                  <div>Chuyển đổi sang WGS84 tự động</div>
                 </div>
 
                 <button
@@ -145,12 +154,12 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                   {importing ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Dang nhap du lieu...
+                      Đang nhập dữ liệu...
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      Nhap tat ca thua dat (80 file)
+                      Nhập tất cả thửa đất (80 file)
                     </>
                   )}
                 </button>
@@ -160,7 +169,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                   disabled={importing}
                   className="w-full py-2 bg-bg-main text-text-primary rounded-lg text-xs font-medium hover:bg-border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {importing ? '' : 'Thu nghiem: nhap 5 file dau tien'}
+                  {importing ? '' : 'Thử nghiệm: nhập 5 file đầu tiên'}
                 </button>
 
                 {/* Import result */}
@@ -168,17 +177,17 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                   <div className="bg-success/5 border border-success/20 rounded-lg p-3 space-y-1.5">
                     <div className="flex items-center gap-1.5 text-success text-sm font-medium">
                       <CheckCircle2 className="w-4 h-4" />
-                      Nhap thanh cong!
+                      Nhập thành công!
                     </div>
                     <div className="text-xs text-text-secondary space-y-0.5">
-                      <div>{importResult.total_parcels.toLocaleString('vi-VN')} thua dat</div>
-                      <div>{importResult.total_txt_files} file txt + {importResult.total_dgn_files} file dgn da xu ly</div>
+                      <div>{importResult.total_parcels.toLocaleString('vi-VN')} thửa đất</div>
+                      <div>{importResult.total_txt_files} file txt + {importResult.total_dgn_files} file dgn đã xử lý</div>
                       {importResult.parcels_with_polygon > 0 && (
-                        <div>{importResult.parcels_with_polygon.toLocaleString('vi-VN')} thua dat co hinh da</div>
+                        <div>{importResult.parcels_with_polygon.toLocaleString('vi-VN')} thửa đất có hình đa</div>
                       )}
                       {importResult.errors.length > 0 && (
                         <div className="text-warning">
-                          {importResult.errors.length} loi
+                          {importResult.errors.length} lỗi
                         </div>
                       )}
                     </div>
@@ -198,7 +207,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                 {/* Current count */}
                 {parcelCount > 0 && !importResult && (
                   <div className="text-xs text-text-secondary text-center">
-                    Hien thi {parcelCount.toLocaleString('vi-VN')} thua dat tren ban do
+                    Hiển thị {parcelCount.toLocaleString('vi-VN')} thửa đất trên bản đồ
                   </div>
                 )}
               </div>
@@ -208,7 +217,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
             {activeTab === 'export' && (
               <div className="p-4 space-y-4">
                 <div className="text-sm text-text-secondary">
-                  Xuat du lieu thua dat ra file GeoJSON
+                  Xuất dữ liệu thửa đất ra file GeoJSON
                 </div>
                 <button
                   onClick={handleExport}
@@ -220,7 +229,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
                 </button>
                 {parcelCount === 0 && (
                   <div className="text-xs text-text-secondary text-center">
-                    Chua co du lieu. Nhap du lieu truoc.
+                    Chưa có dữ liệu. Nhập dữ liệu trước.
                   </div>
                 )}
               </div>
@@ -233,8 +242,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="ml-2 bg-bg-card rounded-lg shadow-lg border border-border p-2 hover:bg-bg-main transition-colors"
-        title={isOpen ? 'Ẩn bảng điều khiển' : 'Hiện bảng điều khiển'}
-      >
+        title={isOpen ? 'Ẩn bảng điều khiển' : 'Hiện bảng điều khiển'}      >
         {isOpen ? (
           <ChevronLeft className="w-5 h-5 text-text-primary" />
         ) : (
