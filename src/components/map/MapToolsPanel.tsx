@@ -26,6 +26,14 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const autoImported = useRef(false);
+  const [sourcePath, setSourcePath] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/maps/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data?.source_path) setSourcePath(data.source_path); })
+      .catch(() => {});
+  }, []);
 
   const handleImport = async (limitFiles: number = 0) => {
     setImporting(true);
@@ -136,9 +144,19 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
                   <Database className="w-4 h-4 inline mr-1.5" />
                   Nhập dữ liệu thửa đất từ{' '}
                   <span className="font-mono text-xs bg-bg-main px-1.5 py-0.5 rounded">
-                    E:\Ban Do
+                    {sourcePath || '(chưa cấu hình)'}
                   </span>
                 </div>
+
+                {!sourcePath && (
+                  <div className="bg-warning/5 border border-warning/20 rounded-lg p-3 text-xs text-text-secondary">
+                    Chưa tìm thấy thư mục dữ liệu. Tạo file{' '}
+                    <span className="font-mono">backend/.env</span> với dòng:{' '}
+                    <span className="font-mono block mt-1 bg-bg-main px-2 py-1 rounded">
+                      DGN_SOURCE_PATH="đường/dẫn/tới/Ban Do"
+                    </span>
+                  </div>
+                )}
 
                 <div className="text-xs text-text-secondary bg-bg-main rounded-lg p-3 space-y-1">
                   <div>80 file dc*.txt (bản đồ địa chính)</div>

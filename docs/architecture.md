@@ -32,7 +32,10 @@ Two call patterns:
 
 ## GIS Module
 
-Source data lives at `E:\Ban Do` (machine-specific; configured via `dgn_source_path` in `config.py`). The current source path is `E:\Ban Do\Ban do V7\BDDC TT Van Dinh` (80 `dc*.txt` + 81 `dc*.dgn` files, V7 format).
+Source data lives at `E:\Ban Do` (machine-specific; auto-detected by `config.py` or overridden via `DGN_SOURCE_PATH` in `backend/.env`). The current source path is `E:\Ban Do\Ban do V7\BDDC TT Van Dinh` (80 `dc*.txt` + 81 `dc*.dgn` files, V7 format).
+
+> [!WARNING]
+> **DGNv8 not supported by installed GDAL.** `E:\OSGeo4W\bin\ogr2ogr.exe` only has the DGN (V7) driver. V8 DGN files (`E:\Ban Do\Ban do V8\BDDC TT Van Dinh\T*.dgn`) fail with `DGNv8 driver is not available`. Must use V7 source files. Fix: install DGNv8 driver or use ODA File Converter to batch-convert V8 to V7.
 
 Two paired formats per parcel sheet:
 
@@ -49,7 +52,7 @@ Import pipeline (`backend/app/services/gis_service.py`):
 2. Parse pipe-delimited rows via `open_tcvn3` (TCVN3 decode + `sanitize_text`) into `ParcelRecord` (label point + attributes).
 3. Transform all centroids to WGS84 via `gdaltransform`.
 4. For each TXT file, find corresponding `.dgn` file and run `extract_parcel_polygons`: ogr2ogr converts DGN to GeoJSON (VN-2000 to WGS84), LineStrings filtered to parcel centroid area, line network polygonized via `shapely.ops.polygonize`, results filtered by area (200-50000 m2).
-5. Match TXT label points to polygons via greedy 1:1 nearest-distance assignment (`match_parcels_to_polygons`, within 50m).
+5. Match TXT label points to polygons via greedy 1:1 nearest-distance assignment (`match_parcels_to_polygons`, within 50m). Parcels without a polygon match get an approximate centroid-square from recorded area (handles DGN line gaps).
 6. Batch insert to PostGIS (`ST_GeomFromGeoJSON` for polygons, `ST_MakePoint` for centroids).
 7. Calculate bbox and center via PostGIS aggregates.
 

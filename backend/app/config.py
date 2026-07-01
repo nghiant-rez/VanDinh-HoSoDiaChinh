@@ -1,4 +1,26 @@
+import os
+import glob
+import logging
+
 from pydantic_settings import BaseSettings
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def _autodetect_dgn_path() -> str:
+    """Scan drives for Ban Do subfolder with 50+ dc*.txt files."""
+    for drive in ["E:", "D:", "C:", "F:"]:
+        root = rf"{drive}\Ban Do"
+        if not os.path.isdir(root):
+            continue
+        for dirpath, _dirs, _files in os.walk(root):
+            txt_files = glob.glob(os.path.join(dirpath, "dc*.txt"))
+            if len(txt_files) >= 50:
+                logger.info("Auto-detected DGN source: %s (%d txt files)", dirpath, len(txt_files))
+                return dirpath
+    return ""
+
 
 class Settings(BaseSettings):
     database_url: str = "postgresql://localhost:5432/vandinh"
@@ -20,3 +42,16 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Auto-detect DGN source if the configured path doesn't exist
+if not os.path.isdir(settings.dgn_source_path) or not glob.glob(
+    os.path.join(settings.dgn_source_path, "dc*.txt")
+):
+    detected = _autodetect_dgn_path()
+    if detected:
+        settings.dgn_source_path = detected
+    else:
+        logger.warning(
+            "DGN source path not found: %s. Set DGN_SOURCE_PATH in backend/.env",
+            settings.dgn_source_path,
+        )

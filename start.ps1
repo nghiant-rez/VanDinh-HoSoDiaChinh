@@ -28,7 +28,6 @@ if ($dockerPg) {
     if (-not $running) {
         Write-Host "[1/4] Starting PostgreSQL container '$dockerPg'..." -ForegroundColor Cyan
         docker start $dockerPg
-        Start-Sleep -Seconds 3
     } else {
         Write-Host "[1/4] PostgreSQL container already running" -ForegroundColor Green
     }
@@ -38,14 +37,58 @@ if ($dockerPg) {
     if ($pgSvc) {
         Write-Host "[1/4] Starting PostgreSQL service..." -ForegroundColor Cyan
         Start-Service $pgSvc.Name
-        Start-Sleep -Seconds 2
     } else {
-        Write-Host "[1/4] PostgreSQL running (service or already up)" -ForegroundColor Green
+        Write-Host "[1/4] PostgreSQL service already running" -ForegroundColor Green
     }
 }
 
-# 2. Ensure Python venv and dependencies
-Write-Host "[2/4] Checking Python environment..." -ForegroundColor Cyan
+# Wait for PostgreSQL to accept TCP connections (service "Running" != ready)
+Write-Host "       Waiting for PostgreSQL to accept connections..." -ForegroundColor DarkGray
+$dbUrl = $env:DATABASE_URL
+if (-not $dbUrl) {
+    $envFile = Join-Path $backendDir ".env"
+    if (Test-Path $envFile) {
+        $envFileContent = Get-Content $envFile
+        $dbUrl = ($envFileContent | Where-Object { $_ -match '^DATABASE_URL=' }) -replace '.*="?([^"]+)"?$', '$1' -replace '^DATABASE_URL=', ''
+    }
+}
+if (-not $dbUrl) { $dbUrl = "postgresql://postgres:123456@localhost:5432/vandinh" }
+
+$pgReady = $false
+for ($i = 0; $i -lt 30; $i++) {
+    try {
+        $conn = New-Object System.Net.Sockets.TcpClient
+        $conn.Connect("localhost", 5432)
+        $conn.Close()
+        $pgReady = $true
+        break
+    } catch {
+        Start-Sleep -Seconds 1
+    }
+}
+if ($pgReady) {
+    Write-Host "       PostgreSQL ready" -ForegroundColor Green
+} else {
+    Write-Host "       WARNING: PostgreSQL not responding on port 5432 after 30s" -ForegroundColor Red
+    Write-Host "       Backend will likely fail to start. Check PostgreSQL service." -ForegroundColor Yellow
+}
+
+# 2. Ensure backend/.env exists (auto-create from .env.example if missing)
+$envFile = Join-Path $backendDir ".env"
+$envExample = Join-Path $backendDir ".env.example"
+if (-not (Test-Path $envFile)) {
+    if (Test-Path $envExample) {
+        Write-Host "[2/5] Creating backend/.env from .env.example..." -ForegroundColor Cyan
+        Copy-Item $envExample $envFile
+        Write-Host "       Edit backend/.env if your PostgreSQL password or data path differs." -ForegroundColor Yellow
+    } else {
+        Write-Host "[2/5] WARNING: No backend/.env and no .env.example found." -ForegroundColor Red
+    }
+    Start-Sleep -Seconds 2
+}
+
+# 3. Ensure Python venv and dependencies
+Write-Host "[3/5] Checking Python environment..." -ForegroundColor Cyan
 if (-not (Test-Path "$backendDir\venv\Scripts\Activate.ps1")) {
     Write-Host "       Creating Python venv..." -ForegroundColor Yellow
     python -m venv "$backendDir\venv"
@@ -67,7 +110,7 @@ if (-not (Test-Path "$backendDir\venv\Scripts\uvicorn.exe")) {
 Write-Host "       Python environment ready" -ForegroundColor Green
 
 # 3. Start FastAPI backend in new window
-Write-Host "[3/4] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
+Write-Host "[4/5] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
 cd '$backendDir'
 .\venv\Scripts\Activate.ps1
@@ -75,7 +118,7 @@ uvicorn app.main:app --reload --port 8000
 "@
 
 # 4. Start Next.js frontend in new window
-Write-Host "[4/4] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
+Write-Host "[5/5] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
 cd '$root'
 npm run dev
