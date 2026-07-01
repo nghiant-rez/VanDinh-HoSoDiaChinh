@@ -28,7 +28,6 @@ if ($dockerPg) {
     if (-not $running) {
         Write-Host "[1/4] Starting PostgreSQL container '$dockerPg'..." -ForegroundColor Cyan
         docker start $dockerPg
-        Start-Sleep -Seconds 3
     } else {
         Write-Host "[1/4] PostgreSQL container already running" -ForegroundColor Green
     }
@@ -38,10 +37,40 @@ if ($dockerPg) {
     if ($pgSvc) {
         Write-Host "[1/4] Starting PostgreSQL service..." -ForegroundColor Cyan
         Start-Service $pgSvc.Name
-        Start-Sleep -Seconds 2
     } else {
-        Write-Host "[1/4] PostgreSQL running (service or already up)" -ForegroundColor Green
+        Write-Host "[1/4] PostgreSQL service already running" -ForegroundColor Green
     }
+}
+
+# Wait for PostgreSQL to accept TCP connections (service "Running" != ready)
+Write-Host "       Waiting for PostgreSQL to accept connections..." -ForegroundColor DarkGray
+$dbUrl = $env:DATABASE_URL
+if (-not $dbUrl) {
+    $envFile = Join-Path $backendDir ".env"
+    if (Test-Path $envFile) {
+        $envFileContent = Get-Content $envFile
+        $dbUrl = ($envFileContent | Where-Object { $_ -match '^DATABASE_URL=' }) -replace '.*="?([^"]+)"?$', '$1' -replace '^DATABASE_URL=', ''
+    }
+}
+if (-not $dbUrl) { $dbUrl = "postgresql://postgres:123456@localhost:5432/vandinh" }
+
+$pgReady = $false
+for ($i = 0; $i -lt 30; $i++) {
+    try {
+        $conn = New-Object System.Net.Sockets.TcpClient
+        $conn.Connect("localhost", 5432)
+        $conn.Close()
+        $pgReady = $true
+        break
+    } catch {
+        Start-Sleep -Seconds 1
+    }
+}
+if ($pgReady) {
+    Write-Host "       PostgreSQL ready" -ForegroundColor Green
+} else {
+    Write-Host "       WARNING: PostgreSQL not responding on port 5432 after 30s" -ForegroundColor Red
+    Write-Host "       Backend will likely fail to start. Check PostgreSQL service." -ForegroundColor Yellow
 }
 
 # 2. Ensure Python venv and dependencies

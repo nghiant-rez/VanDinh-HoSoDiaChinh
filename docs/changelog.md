@@ -2,6 +2,38 @@
 
 Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
 
+## 2026-07-01 — Map UX, Polygon Fallback, Startup Reliability, Auto-Detect Data Path
+
+### Map Parcel Rendering
+- `backend/app/services/gis_service.py` — lowered `PARCEL_MIN_M2` from 200 to 5 so small residential parcels (50-150 m2) get polygons. Was filtering out 64 of 70 dot-only parcels.
+- `backend/app/services/gis_service.py` — added centroid-square fallback in `match_parcels_to_polygons`: parcels that fail polygonize (DGN line gaps) get an approximate square from recorded area. Eliminates remaining dot-only parcels. Result: 700/700 parcels with polygons (was 630/700).
+
+### Map UI
+- `src/components/map/MapView.tsx` — OSM basemap opacity set to 0.7 (user preference).
+- `src/components/map/MapView.tsx` — capped `maxZoom: 19` to stop OSM zoom-20 tile fetch errors (OSM maxes at 19).
+- `src/components/map/MapView.tsx` — custom compact popup with close button in corner. Disabled MapLibre default close button, removed default padding via `globals.css`.
+- `src/components/map/MapView.tsx` — reduced popup padding/margins/font sizes for compact display.
+- `src/app/(dashboard)/map/page.tsx` — auto-load test data via `/map?test=1` query param. Triggers 5-file import on page load.
+- `src/components/map/MapToolsPanel.tsx` — fetches actual `source_path` from backend `/api/maps/status` instead of hardcoded `E:\Ban Do`.
+- `src/components/map/MapToolsPanel.tsx` — shows yellow warning box with `.env` instructions when no data path found.
+- `src/app/api/maps/status/route.ts` (new) — Next.js proxy for backend `/api/gis/status` endpoint.
+- `src/components/map/MapLegend.tsx` + `MapToolsPanel.tsx` — fixed Vietnamese diacritics: Thua->Thua, Chu giai->Chu giai, all labels with full accents.
+
+### Startup Reliability
+- `start.ps1` — replaced fixed `Start-Sleep` with TCP port poll (up to 30s) for PostgreSQL readiness. Service "Running" != accepting connections; PostgreSQL 18 takes 5-15s to initialize after service starts.
+- `backend/app/database.py` — added 5-retry loop (2s apart) with `pool_pre_ping=True` for DB connection on startup. Prevents backend crash if PostgreSQL still initializing.
+
+### Auto-Detect Data Path
+- `backend/app/config.py` — auto-detect `dgn_source_path` by scanning drives (E:, D:, C:, F:) for `Ban Do` subfolder with 50+ `dc*.txt` files. Teammates no longer need to manually edit `.env`. Falls back to warning if not found.
+- `backend/.env.example` (new) — documents all env vars (`DATABASE_URL`, `DGN_SOURCE_PATH`, `GDAL_BIN_PATH`) for teammate onboarding.
+
+### Known Issue: DGNv8 Not Supported by Installed GDAL
+- `E:\OSGeo4W\bin\ogr2ogr.exe` only has the DGN (V7) driver, not DGNv8.
+- V8 DGN files (`E:\Ban Do\Ban do V8\BDDC TT Van Dinh\T*.dgn`) fail with: `recognized as a DGNv8 dataset, but the DGNv8 driver is not available in this GDAL build`.
+- V7 DGN files (`E:\Ban Do\Ban do V7\BDDC TT Van Dinh\dc*.dgn`) parse correctly via the old DGN driver.
+- Auto-detect prefers V7 over V8 (alphabetical `os.walk` order) — this is correct because V8 would fail.
+- Fix options: install DGNv8 driver for GDAL (requires recompiling GDAL with libdgnv8), use ODA File Converter to batch-convert V8 to V7, or continue using V7 source files.
+
 ## 2026-06-29 — DGN Polygon Extraction + TCVN3 Decoder + UI Fixes
 
 ### DGN Polygon Extraction (UC-04 core fix)
