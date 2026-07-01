@@ -118,4 +118,5 @@ digital-archive-map-system/
 - **Review required:** tag other dev before merge
 - **Merge method:** squash preferred (keeps `main` history clean for changelog)
 - **NEVER push or merge to remote without explicit user permission.** Stage and commit locally, then ask for review before any `git push` or merge operation.
+- **After every push:** update `docs/changelog.md` with a dated entry (what changed, which files, why). Commit and push the changelog update in the same session.
 
