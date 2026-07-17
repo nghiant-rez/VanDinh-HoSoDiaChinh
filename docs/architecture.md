@@ -76,3 +76,8 @@ Query: `ST_AsGeoJSON(COALESCE(geom, centroid))` - returns polygon if available, 
 - TypeScript strict mode, no `any` unless justified.
 - Tailwind 4 with `@theme` tokens from `globals.css` (Figma tokens).
 - Feature branches (Nghia, Huy) -> PR -> main workflow.
+
+## Planned Additions
+
+- **Redis**: Planned for caching (e.g. GIS spatial queries) and background job queues.
+- **Elasticsearch**: Planned for advanced full-text search across documents and metadata.
