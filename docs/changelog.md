@@ -2,6 +2,20 @@
 
 Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
 
+## 2026-07-17 — Cross-Machine Launcher Hardening
+
+### Team Setup
+- `backend/.env.example` — now tracked by Git; first launch can reliably create `backend/.env` on a clean clone. Database password remains a required per-machine value via the `CHANGE_ME` placeholder.
+- `backend/.env.example` — leaves `DGN_SOURCE_PATH` empty so existing backend auto-detection scans `C:`, `D:`, `E:`, and `F:` for the local `Ban Do` dataset.
+- `.gitignore` — keeps real `.env` files ignored while explicitly allowing `backend/.env.example`.
+
+### Launcher Reliability
+- `start.bat` — uses built-in Windows PowerShell directly and reports startup failures; PowerShell 7 (`pwsh`) is no longer required.
+- `start.ps1` — reads PostgreSQL host and port from `DATABASE_URL`, starts a local PostGIS container or PostgreSQL service only when needed, then fails early when the configured endpoint stays unavailable.
+- `start.ps1` — detects GDAL from configured, OSGeo4W, and common QGIS locations without changing the shared backend config.
+- `start.ps1` — creates a Python 3.12 virtual environment, reinstalls Python dependencies when `requirements.txt` changes, and runs `npm ci` on a clean frontend clone.
+- `start.ps1` — starts backend and frontend with the PowerShell edition already running the launcher, using encoded commands so paths containing spaces remain safe.
+
 ## 2026-07-01 — Map UX, Polygon Fallback, Startup Reliability, Auto-Detect Data Path
 
 ### Map Parcel Rendering
