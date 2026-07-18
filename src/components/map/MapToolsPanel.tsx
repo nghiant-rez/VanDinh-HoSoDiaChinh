@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Download, Loader2, CheckCircle2, AlertCircle, Database, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImportResult {
@@ -16,16 +16,14 @@ interface ImportResult {
 interface MapToolsPanelProps {
   onImportComplete?: (data: GeoJSON.FeatureCollection) => void;
   parcelCount: number;
-  autoImport?: number;
 }
 
-export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }: MapToolsPanelProps) {
+export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelProps) {
   const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const autoImported = useRef(false);
   const [sourcePath, setSourcePath] = useState<string>('');
 
   useEffect(() => {
@@ -76,13 +74,6 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
       setImporting(false);
     }
   };
-
-  useEffect(() => {
-    if (autoImport > 0 && !autoImported.current) {
-      autoImported.current = true;
-      handleImport(autoImport);
-    }
-  }, [autoImport]);
 
   const handleExport = async () => {
     try {
@@ -153,7 +144,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
                     Chưa tìm thấy thư mục dữ liệu. Tạo file{' '}
                     <span className="font-mono">backend/.env</span> với dòng:{' '}
                     <span className="font-mono block mt-1 bg-bg-main px-2 py-1 rounded">
-                      DGN_SOURCE_PATH="đường/dẫn/tới/Ban Do"
+                      DGN_SOURCE_PATH=&quot;đường/dẫn/tới/Ban Do&quot;
                     </span>
                   </div>
                 )}

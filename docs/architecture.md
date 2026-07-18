@@ -45,6 +45,7 @@ Two paired formats per parcel sheet:
 Storage: PostgreSQL + PostGIS (`thuadat` table). Geometry columns:
 - `geom` (POLYGON, SRID 4326) - parcel boundary polygonized from DGN line network.
 - `centroid` (POINT, SRID 4326) - label point from TXT (always available).
+- `geometry_source` (optional local/test migration) - `dgn_polygon`, `area_estimate`, `centroid_only`, or legacy `untracked_polygon`. Apply `backend/migrations/20260718_add_geometry_source.sql` only to a local/test database until team review.
 - GIST spatial indexes on both columns.
 
 Import pipeline (`backend/app/services/gis_service.py`):
@@ -57,6 +58,17 @@ Import pipeline (`backend/app/services/gis_service.py`):
 7. Calculate bbox and center via PostGIS aggregates.
 
 Query: `ST_AsGeoJSON(COALESCE(geom, centroid))` - returns polygon if available, otherwise centroid point. Frontend renders polygon fill + outline layers for Polygon features, circle layer for Point fallback.
+
+Map interaction (`src/app/(dashboard)/map/page.tsx` + `src/components/map/MapView.tsx`): parcels load once on page open; exact sheet/parcel search focuses a feature; MapLibre feature state keeps clicked/search selection visible; popup shows parcel metadata and geometry provenance; controls toggle parcels, labels, opacity, street/satellite basemap; temporary point/polygon sketches stay client-side and never write to PostGIS.
+
+Satellite imagery is opt-in because imagery providers require their own URL, attribution, access token, and license. Set `NEXT_PUBLIC_SATELLITE_TILE_TEMPLATE` to a licensed XYZ template containing `{z}`, `{x}`, and `{y}`. Optionally set `NEXT_PUBLIC_SATELLITE_ATTRIBUTION`. When no template is configured, the satellite button remains disabled.
+
+Example using your own restricted MapTiler key (confirm current tileset and required attribution in the provider account):
+
+```dotenv
+NEXT_PUBLIC_SATELLITE_TILE_TEMPLATE=https://api.maptiler.com/tiles/satellite-v4/{z}/{x}/{y}?key=YOUR_MAPTILER_API_KEY
+NEXT_PUBLIC_SATELLITE_ATTRIBUTION=PROVIDER_REQUIRED_ATTRIBUTION
+```
 
 > [!NOTE]
 > The original Dev 1 assignment mentioned "DXF/Shapefile" import. The actual source data contains no `.dxf` or `.shp` files - it is `.dgn` + `.txt`. Scope is corrected to DGN + TXT in `feature-ownership.md`.

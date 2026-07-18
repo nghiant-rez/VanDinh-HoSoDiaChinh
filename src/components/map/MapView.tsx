@@ -1,325 +1,563 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// Van Dinh commune center (derived from 14,714 parcel centroids)
 const VAN_DINH_CENTER: [number, number] = [105.764167, 20.734079];
-const VAN_DINH_ZOOM = 15;
-
-// Land type colors
-const LAND_COLORS: Record<string, string> = {
-  LUC: '#22c55e',  // Lua nuoc - green
-  BHK: '#f59e0b',  // Dat bang hoang - amber
-  DGT: '#6b7280',  // Giao thong - gray
-  DTL: '#3b82f6',  // Thuy loi - blue
-  ODT: '#ef4444',  // O dat - red
-  CLN: '#84cc16',  // Cay lau nam - lime
-  NTS: '#06b6d4',  // Nuoi trong thuy san - cyan
-  TMD: '#a855f7',  // Thuong mai dich vu - purple
-  SKC: '#f97316',  // San xuat kinh doanh - orange
-  CQP: '#64748b',  // Quoc phong - slate
+const EMPTY_GEOJSON: GeoJSON.FeatureCollection = {
+  type: 'FeatureCollection',
+  features: [],
 };
 
-function escapeHtml(str: unknown): string {
-  if (str === null || str === undefined) return '';
-  return String(str)
+const LAND_COLOR: maplibregl.ExpressionSpecification = [
+  'match', ['get', 'mdsd2003'],
+  'LUC', '#22c55e',
+  'BHK', '#f59e0b',
+  'DGT', '#6b7280',
+  'DTL', '#3b82f6',
+  'ODT', '#ef4444',
+  'CLN', '#84cc16',
+  'NTS', '#06b6d4',
+  'TMD', '#a855f7',
+  'SKC', '#f97316',
+  'CQP', '#64748b',
+  '#94a3b8',
+];
+
+const POLYGON_FILTER: maplibregl.FilterSpecification = [
+  'any',
+  ['==', ['geometry-type'], 'Polygon'],
+  ['==', ['geometry-type'], 'MultiPolygon'],
+];
+
+const POINT_FILTER: maplibregl.FilterSpecification = [
+  '==', ['geometry-type'], 'Point',
+];
+
+export type ParcelId = string | number;
+export type BasemapKind = 'street' | 'satellite';
+export type MapInteractionMode = 'select' | 'point' | 'polygon';
+export type DrawnFeature = GeoJSON.Feature<GeoJSON.Point | GeoJSON.Polygon>;
+
+export interface ParcelSelection {
+  id: ParcelId;
+  properties: Record<string, unknown>;
+  feature: GeoJSON.Feature;
+}
+
+export interface MapFocusRequest {
+  feature: GeoJSON.Feature;
+  requestId: number;
+}
+
+interface MapViewProps {
+  geojsonData: GeoJSON.FeatureCollection | null;
+  selectedParcelId: ParcelId | null;
+  onParcelClick?: (selection: ParcelSelection) => void;
+  parcelsVisible?: boolean;
+  labelsVisible?: boolean;
+  parcelOpacity?: number;
+  basemap?: BasemapKind;
+  satelliteTileTemplate?: string;
+  satelliteAttribution?: string;
+  focusRequest?: MapFocusRequest | null;
+  interactionMode?: MapInteractionMode;
+  drawnFeature?: DrawnFeature | null;
+  drawResetKey?: number;
+  onDrawnFeatureChange?: (feature: DrawnFeature | null) => void;
+}
+
+function drawingData(
+  completed: DrawnFeature | null,
+  draft: [number, number][],
+): GeoJSON.FeatureCollection {
+  const features: GeoJSON.Feature[] = completed ? [completed] : [];
+  if (draft.length > 1) {
+    features.push({
+      type: 'Feature',
+      properties: { kind: 'draft-line' },
+      geometry: { type: 'LineString', coordinates: draft },
+    });
+  }
+  for (const [index, coordinate] of draft.entries()) {
+    features.push({
+      type: 'Feature',
+      properties: { kind: index === 0 ? 'start' : 'vertex' },
+      geometry: { type: 'Point', coordinates: coordinate },
+    });
+  }
+  return { type: 'FeatureCollection', features };
+}
+
+function setDrawingData(
+  instance: maplibregl.Map,
+  completed: DrawnFeature | null,
+  draft: [number, number][],
+) {
+  const source = instance.getSource('drawings') as maplibregl.GeoJSONSource | undefined;
+  source?.setData(drawingData(completed, draft));
+}
+
+function escapeHtml(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  return String(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
 
-function getFeatureCenter(feature: GeoJSON.Feature): [number, number] | null {
-  const geom = feature.geometry;
-  if (!geom) return null;
-  if (geom.type === 'Point') {
-    return geom.coordinates as [number, number];
-  }
-  if (geom.type === 'Polygon' || geom.type === 'MultiPolygon') {
-    const ring = geom.type === 'Polygon'
-      ? geom.coordinates[0]
-      : geom.coordinates[0]?.[0];
-    if (!ring || ring.length === 0) return null;
-    let lon = 0, lat = 0;
-    for (const [x, y] of ring) { lon += x; lat += y; }
-    return [lon / ring.length, lat / ring.length];
-  }
-  return null;
+function getParcelId(feature: GeoJSON.Feature): ParcelId | null {
+  const id = feature.id ?? feature.properties?.id;
+  return typeof id === 'string' || typeof id === 'number' ? id : null;
 }
 
-interface MapViewProps {
-  geojsonData: GeoJSON.FeatureCollection | null;
-  onParcelClick?: (properties: Record<string, unknown>) => void;
+function addFeatureToBounds(
+  bounds: maplibregl.LngLatBounds,
+  feature: GeoJSON.Feature,
+): maplibregl.LngLatBounds {
+  const geometry = feature.geometry;
+  if (!geometry) return bounds;
+  if (geometry.type === 'Point') {
+    return bounds.extend(geometry.coordinates as [number, number]);
+  }
+
+  const rings = geometry.type === 'Polygon'
+    ? geometry.coordinates
+    : geometry.type === 'MultiPolygon'
+      ? geometry.coordinates.flat()
+      : [];
+  for (const ring of rings) {
+    for (const coordinate of ring) {
+      bounds.extend(coordinate as [number, number]);
+    }
+  }
+  return bounds;
 }
 
-export function MapView({ geojsonData, onParcelClick }: MapViewProps) {
+function geometrySourceLabel(value: unknown): string {
+  switch (value) {
+    case 'dgn_polygon': return 'Ranh DGN';
+    case 'area_estimate': return 'Ước tính từ diện tích';
+    case 'centroid_only': return 'Chỉ có điểm tâm';
+    case 'untracked_polygon': return 'Đa giác cũ, chưa phân loại';
+    default: return '';
+  }
+}
+
+function popupHtml(properties: Record<string, unknown>): string {
+  const area = Number(properties.dien_tich || 0).toLocaleString('vi-VN', {
+    maximumFractionDigits: 1,
+  });
+  const geometrySource = geometrySourceLabel(properties.geometry_source);
+  return `
+    <div style="font-family:system-ui,sans-serif;font-size:12px;line-height:1.4;padding:8px 10px;min-width:210px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">
+        Thửa ${escapeHtml(properties.so_thua)} - Tờ ${escapeHtml(properties.to_ban_do)}
+      </div>
+      <div style="background:#fff7ed;padding:6px 8px;border-radius:6px;margin-bottom:6px;border-left:3px solid #f97316">
+        <div style="font-size:10px;color:#9a3412">Diện tích</div>
+        <div style="font-weight:700;font-size:14px;color:#7c2d12">${area} m²</div>
+      </div>
+      <div><b>Loại đất:</b> ${escapeHtml(properties.loai_dat) || escapeHtml(properties.mdsd2003) || 'Chưa có'}</div>
+      ${properties.xu_dong ? `<div><b>Xứ đồng:</b> ${escapeHtml(properties.xu_dong)}</div>` : ''}
+      ${geometrySource ? `<div><b>Nguồn hình học:</b> ${escapeHtml(geometrySource)}</div>` : ''}
+    </div>`;
+}
+
+function opacityExpression(value: number): maplibregl.ExpressionSpecification {
+  return [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    Math.min(1, value + 0.3),
+    value,
+  ];
+}
+
+export function MapView({
+  geojsonData,
+  selectedParcelId,
+  onParcelClick,
+  parcelsVisible = true,
+  labelsVisible = true,
+  parcelOpacity = 0.4,
+  basemap = 'street',
+  satelliteTileTemplate = '',
+  satelliteAttribution = 'Ảnh vệ tinh',
+  focusRequest = null,
+  interactionMode = 'select',
+  drawnFeature = null,
+  drawResetKey = 0,
+  onDrawnFeatureChange,
+}: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const popup = useRef<maplibregl.Popup | null>(null);
+  const clickCallback = useRef(onParcelClick);
+  const drawCallback = useRef(onDrawnFeatureChange);
+  const interactionModeRef = useRef<MapInteractionMode>(interactionMode);
+  const drawnFeatureRef = useRef<DrawnFeature | null>(drawnFeature);
+  const draftCoordinates = useRef<[number, number][]>([]);
+  const currentSelection = useRef<ParcelId | null>(selectedParcelId);
+  const previousSelection = useRef<ParcelId | null>(null);
+  const fittedInitialData = useRef(false);
 
-  const handleParcelClick = useCallback(
-    (properties: Record<string, unknown>) => {
-      onParcelClick?.(properties);
-    },
-    [onParcelClick]
-  );
+  useEffect(() => {
+    clickCallback.current = onParcelClick;
+  }, [onParcelClick]);
+
+  useEffect(() => {
+    drawCallback.current = onDrawnFeatureChange;
+  }, [onDrawnFeatureChange]);
+
+  useEffect(() => {
+    interactionModeRef.current = interactionMode;
+  }, [interactionMode]);
+
+  useEffect(() => {
+    drawnFeatureRef.current = drawnFeature;
+  }, [drawnFeature]);
+
+  useEffect(() => {
+    currentSelection.current = selectedParcelId;
+  }, [selectedParcelId]);
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return;
 
-    map.current = new maplibregl.Map({
+    const instance = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
         sources: {
-          osm: {
+          street: {
             type: 'raster',
-            tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ],
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
-            attribution: '&copy; OpenStreetMap Contributors',
+            attribution: '&copy; OpenStreetMap contributors',
+          },
+          parcels: {
+            type: 'geojson',
+            data: EMPTY_GEOJSON,
+            promoteId: 'id',
+          },
+          drawings: {
+            type: 'geojson',
+            data: EMPTY_GEOJSON,
           },
         },
         layers: [
+          { id: 'street-layer', type: 'raster', source: 'street' },
           {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 19,
+            id: 'parcels-fill', type: 'fill', source: 'parcels',
+            filter: POLYGON_FILTER,
             paint: {
-              'raster-opacity': 0.7,
+              'fill-color': LAND_COLOR,
+              'fill-opacity': opacityExpression(0.4),
+            },
+          },
+          {
+            id: 'parcels-outline', type: 'line', source: 'parcels',
+            filter: POLYGON_FILTER,
+            paint: {
+              'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#f97316', '#1e293b'],
+              'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 1.5],
+            },
+          },
+          {
+            id: 'parcels-circle', type: 'circle', source: 'parcels',
+            filter: POINT_FILTER,
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 3, 15, 6, 18, 10],
+              'circle-color': LAND_COLOR,
+              'circle-opacity': opacityExpression(0.8),
+              'circle-stroke-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#f97316', '#ffffff'],
+              'circle-stroke-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 1.5],
+            },
+          },
+          {
+            id: 'parcels-label', type: 'symbol', source: 'parcels', minzoom: 16,
+            layout: {
+              'text-field': ['get', 'so_thua'],
+              'text-size': 11,
+              'text-offset': [0, 1.5],
+              'text-anchor': 'top',
+            },
+            paint: {
+              'text-color': '#1e293b',
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 1.5,
+            },
+          },
+          {
+            id: 'drawings-fill', type: 'fill', source: 'drawings',
+            filter: ['==', ['geometry-type'], 'Polygon'],
+            paint: {
+              'fill-color': '#2563eb',
+              'fill-opacity': 0.2,
+            },
+          },
+          {
+            id: 'drawings-line', type: 'line', source: 'drawings',
+            filter: [
+              'any',
+              ['==', ['geometry-type'], 'Polygon'],
+              ['==', ['geometry-type'], 'LineString'],
+            ],
+            paint: {
+              'line-color': '#2563eb',
+              'line-width': 3,
+              'line-dasharray': [2, 1],
+            },
+          },
+          {
+            id: 'drawings-point', type: 'circle', source: 'drawings',
+            filter: ['==', ['geometry-type'], 'Point'],
+            paint: {
+              'circle-radius': ['case', ['==', ['get', 'kind'], 'start'], 7, 6],
+              'circle-color': ['case', ['==', ['get', 'kind'], 'start'], '#f97316', '#2563eb'],
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-width': 2,
             },
           },
         ],
       },
       center: VAN_DINH_CENTER,
-      zoom: VAN_DINH_ZOOM,
+      zoom: 15,
       maxZoom: 19,
     });
 
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.current.addControl(
-      new maplibregl.ScaleControl({ maxWidth: 200 }),
-      'bottom-left'
-    );
+    map.current = instance;
+    popup.current = new maplibregl.Popup({ closeButton: true, closeOnClick: false });
+    instance.addControl(new maplibregl.NavigationControl(), 'top-right');
+    instance.addControl(new maplibregl.ScaleControl({ maxWidth: 200 }), 'bottom-left');
 
-    popup.current = new maplibregl.Popup({
-      closeButton: false,
-      closeOnClick: false,
-      maxWidth: '320px',
-    });
+    const handleLoad = () => {
+      if (!satelliteTileTemplate) return;
+      instance.addSource('satellite', {
+        type: 'raster',
+        tiles: [satelliteTileTemplate],
+        tileSize: 256,
+        attribution: satelliteAttribution,
+      });
+      instance.addLayer(
+        {
+          id: 'satellite-layer',
+          type: 'raster',
+          source: 'satellite',
+          layout: { visibility: 'none' },
+        },
+        'parcels-fill',
+      );
+    };
+
+    const handleParcelClick = (
+      event: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] },
+    ) => {
+      if (interactionModeRef.current !== 'select') return;
+      const rendered = event.features?.[0];
+      if (!rendered) return;
+      const feature = rendered as unknown as GeoJSON.Feature;
+      const id = getParcelId(feature);
+      const properties = (feature.properties ?? {}) as Record<string, unknown>;
+      const bounds = addFeatureToBounds(new maplibregl.LngLatBounds(), feature);
+      if (id === null || bounds.isEmpty()) return;
+      popup.current?.setLngLat(bounds.getCenter()).setHTML(popupHtml(properties)).addTo(instance);
+      clickCallback.current?.({ id, properties, feature });
+    };
+
+    const handleDrawingClick = (event: maplibregl.MapMouseEvent) => {
+      const mode = interactionModeRef.current;
+      if (mode === 'select') return;
+
+      const coordinate: [number, number] = [event.lngLat.lng, event.lngLat.lat];
+      if (mode === 'point') {
+        const feature: DrawnFeature = {
+          type: 'Feature',
+          properties: { kind: 'completed' },
+          geometry: { type: 'Point', coordinates: coordinate },
+        };
+        draftCoordinates.current = [];
+        drawnFeatureRef.current = feature;
+        setDrawingData(instance, feature, []);
+        drawCallback.current?.(feature);
+        return;
+      }
+
+      const draft = draftCoordinates.current;
+      if (draft.length >= 3) {
+        const start = instance.project({ lng: draft[0][0], lat: draft[0][1] });
+        const distance = Math.hypot(event.point.x - start.x, event.point.y - start.y);
+        if (distance <= 14) {
+          const feature: DrawnFeature = {
+            type: 'Feature',
+            properties: { kind: 'completed' },
+            geometry: { type: 'Polygon', coordinates: [[...draft, draft[0]]] },
+          };
+          draftCoordinates.current = [];
+          drawnFeatureRef.current = feature;
+          setDrawingData(instance, feature, []);
+          drawCallback.current?.(feature);
+          return;
+        }
+      }
+
+      if (draft.length === 0 && drawnFeatureRef.current) {
+        drawnFeatureRef.current = null;
+        drawCallback.current?.(null);
+      }
+      draft.push(coordinate);
+      setDrawingData(instance, drawnFeatureRef.current, draft);
+    };
+
+    const cursorOn = () => {
+      instance.getCanvas().style.cursor = interactionModeRef.current === 'select' ? 'pointer' : 'crosshair';
+    };
+    const cursorOff = () => {
+      instance.getCanvas().style.cursor = interactionModeRef.current === 'select' ? '' : 'crosshair';
+    };
+
+    instance.on('load', handleLoad);
+    instance.on('click', handleDrawingClick);
+    instance.on('click', 'parcels-fill', handleParcelClick);
+    instance.on('click', 'parcels-circle', handleParcelClick);
+    instance.on('mouseenter', 'parcels-fill', cursorOn);
+    instance.on('mouseleave', 'parcels-fill', cursorOff);
+    instance.on('mouseenter', 'parcels-circle', cursorOn);
+    instance.on('mouseleave', 'parcels-circle', cursorOff);
 
     return () => {
       popup.current?.remove();
-      map.current?.remove();
+      instance.remove();
       map.current = null;
     };
-  }, []);
+  }, [satelliteAttribution, satelliteTileTemplate]);
 
-  // Update GeoJSON data when it changes
   useEffect(() => {
-    if (!map.current || !geojsonData) return;
+    const instance = map.current;
+    if (!instance) return;
+    draftCoordinates.current = [];
+    const update = () => setDrawingData(instance, drawnFeatureRef.current, []);
+    if (instance.isStyleLoaded()) update();
+    else instance.once('load', update);
+    instance.getCanvas().style.cursor = interactionMode === 'select' ? '' : 'crosshair';
+    if (interactionMode !== 'select') popup.current?.remove();
+    return () => { instance.off('load', update); };
+  }, [interactionMode]);
 
-    const m = map.current;
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance) return;
+    const update = () => setDrawingData(instance, drawnFeature, draftCoordinates.current);
+    if (instance.isStyleLoaded()) update();
+    else instance.once('load', update);
+    return () => { instance.off('load', update); };
+  }, [drawnFeature]);
 
-    const addLayer = () => {
-      // Remove existing source/layers
-      const layers = ['parcels-fill', 'parcels-fill-outline', 'parcels-circle', 'parcels-label'];
-      layers.forEach((id) => { if (m.getLayer(id)) m.removeLayer(id); });
-      if (m.getSource('parcels')) m.removeSource('parcels');
+  useEffect(() => {
+    const instance = map.current;
+    draftCoordinates.current = [];
+    if (instance?.isStyleLoaded()) setDrawingData(instance, drawnFeatureRef.current, []);
+  }, [drawResetKey]);
 
-      // Add GeoJSON source
-      m.addSource('parcels', {
-        type: 'geojson',
-        data: geojsonData,
-      });
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance) return;
 
-      const polyFilter: maplibregl.FilterSpecification = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']];
-      const pointFilter: maplibregl.FilterSpecification = ['==', ['geometry-type'], 'Point'];
-
-      // Polygon fill layer
-      m.addLayer({
-        id: 'parcels-fill',
-        type: 'fill',
-        source: 'parcels',
-        filter: polyFilter,
-        paint: {
-          'fill-color': [
-            'match',
-            ['get', 'mdsd2003'],
-            'LUC', LAND_COLORS.LUC,
-            'BHK', LAND_COLORS.BHK,
-            'DGT', LAND_COLORS.DGT,
-            'DTL', LAND_COLORS.DTL,
-            'ODT', LAND_COLORS.ODT,
-            'CLN', LAND_COLORS.CLN,
-            'NTS', LAND_COLORS.NTS,
-            'TMD', LAND_COLORS.TMD,
-            'SKC', LAND_COLORS.SKC,
-            'CQP', LAND_COLORS.CQP,
-            '#94a3b8',
-          ],
-          'fill-opacity': 0.4,
-        },
-      });
-
-      // Polygon outline
-      m.addLayer({
-        id: 'parcels-fill-outline',
-        type: 'line',
-        source: 'parcels',
-        filter: polyFilter,
-        paint: {
-          'line-color': '#1e293b',
-          'line-width': 2,
-        },
-      });
-
-      // Circle layer for point-only parcels
-      m.addLayer({
-        id: 'parcels-circle',
-        type: 'circle',
-        source: 'parcels',
-        filter: pointFilter,
-        paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            12, 3,
-            15, 6,
-            18, 10,
-          ],
-          'circle-color': [
-            'match',
-            ['get', 'mdsd2003'],
-            'LUC', LAND_COLORS.LUC,
-            'BHK', LAND_COLORS.BHK,
-            'DGT', LAND_COLORS.DGT,
-            'DTL', LAND_COLORS.DTL,
-            'ODT', LAND_COLORS.ODT,
-            'CLN', LAND_COLORS.CLN,
-            'NTS', LAND_COLORS.NTS,
-            'TMD', LAND_COLORS.TMD,
-            'SKC', LAND_COLORS.SKC,
-            'CQP', LAND_COLORS.CQP,
-            '#94a3b8',
-          ],
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 1.5,
-          'circle-opacity': 0.85,
-        },
-      });
-
-      // Label layer (visible at higher zoom)
-      m.addLayer({
-        id: 'parcels-label',
-        type: 'symbol',
-        source: 'parcels',
-        minzoom: 16,
-        layout: {
-          'text-field': ['get', 'so_thua'],
-          'text-size': 11,
-          'text-offset': [0, 1.5],
-          'text-anchor': 'top',
-        },
-        paint: {
-          'text-color': '#1e293b',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 1.5,
-        },
-      });
-
-      // Click handler (works on fill + circle layers)
-      const clickHandler = (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
-        if (!e.features || e.features.length === 0) return;
-        const feature = e.features[0];
-        const props = feature.properties || {};
-        const feat = feature as unknown as GeoJSON.Feature;
-        const center = getFeatureCenter(feat);
-        if (!center) return;
-
-        const area = props.dien_tich
-          ? parseFloat(props.dien_tich).toLocaleString('vi-VN', { maximumFractionDigits: 1 })
-          : '0';
-
-        const html = `
-          <div style="font-family: system-ui, sans-serif; font-size: 12px; line-height: 1.4; padding: 6px 8px; position: relative;">
-            <button id="popup-close" style="position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border: none; border-radius: 3px; background: #f1f5f9; color: #64748b; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#1e293b';" onmouseout="this.style.background='#f1f5f9';this.style.color='#64748b';" aria-label="Đóng">&times;</button>
-            <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #1e293b; border-bottom: 1px solid #e5e7eb; padding-bottom: 2px; padding-right: 22px;">
-              Thửa ${escapeHtml(props.so_thua)} - Tờ ${escapeHtml(props.to_ban_do)}
-            </div>
-            <div style="background: #f0fdf4; padding: 4px; border-radius: 2px; margin-bottom: 4px; border-left: 3px solid #22c55e;">
-              <div style="font-size: 10px; color: #15803d; margin-bottom: 0;">Diện tích</div>
-              <div style="font-weight: 700; font-size: 14px; color: #166534;">${escapeHtml(area)} m²</div>
-            </div>
-            <div style="margin-bottom: 2px; font-size: 11px;"><b>Loại đất:</b> ${escapeHtml(props.loai_dat) || escapeHtml(props.mdsd2003) || 'N/A'}</div>
-            ${props.ten_chu ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Chủ sử dụng:</b> ${escapeHtml(props.ten_chu)}</div>` : ''}
-            ${props.dia_chi ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Địa chỉ:</b> ${escapeHtml(props.dia_chi)}</div>` : ''}
-            ${props.xu_dong ? `<div style="margin-bottom: 2px; font-size: 11px;"><b>Xứ đồng:</b> ${escapeHtml(props.xu_dong)}</div>` : ''}
-          </div>
-        `;
-
-        popup.current
-          ?.setLngLat(center)
-          .setHTML(html)
-          .addTo(m);
-
-        const closeBtn = document.getElementById('popup-close');
-        if (closeBtn) {
-          closeBtn.onclick = () => popup.current?.remove();
-        }
-
-        handleParcelClick(props);
-      };
-
-      m.on('click', 'parcels-fill', clickHandler);
-      m.on('click', 'parcels-circle', clickHandler);
-
-      // Hover cursor
-      const cursorOn = () => { m.getCanvas().style.cursor = 'pointer'; };
-      const cursorOff = () => { m.getCanvas().style.cursor = ''; };
-      m.on('mouseenter', 'parcels-fill', cursorOn);
-      m.on('mouseleave', 'parcels-fill', cursorOff);
-      m.on('mouseenter', 'parcels-circle', cursorOn);
-      m.on('mouseleave', 'parcels-circle', cursorOff);
-
-      // Auto-fit map bounds to show all parcels
-      if (geojsonData.features.length > 0) {
-        const bounds = new maplibregl.LngLatBounds();
-        geojsonData.features.forEach((f) => {
-          const center = getFeatureCenter(f);
-          if (center) bounds.extend(center);
-        });
-        if (bounds.isEmpty() === false) {
-          m.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+    const update = async () => {
+      const source = instance.getSource('parcels') as maplibregl.GeoJSONSource | undefined;
+      if (!source) return;
+      await source.setData(geojsonData ?? EMPTY_GEOJSON, true);
+      if (currentSelection.current !== null) {
+        instance.setFeatureState(
+          { source: 'parcels', id: currentSelection.current },
+          { selected: true },
+        );
+      }
+      if (!fittedInitialData.current && geojsonData?.features.length) {
+        const bounds = geojsonData.features.reduce(
+          addFeatureToBounds,
+          new maplibregl.LngLatBounds(),
+        );
+        if (!bounds.isEmpty()) {
+          instance.fitBounds(bounds, { padding: 50, maxZoom: 17 });
+          fittedInitialData.current = true;
         }
       }
     };
 
-    const onStyleData = () => {
-      if (m.isStyleLoaded() && !m.getLayer('parcels-circle')) {
-        addLayer();
-        m.off('styledata', onStyleData);
-      }
-    };
+    if (instance.isStyleLoaded()) void update();
+    else instance.once('load', update);
+    return () => { instance.off('load', update); };
+  }, [geojsonData]);
 
-    if (m.isStyleLoaded()) {
-      addLayer();
-    } else {
-      m.on('styledata', onStyleData);
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance?.isStyleLoaded()) return;
+    if (previousSelection.current !== null) {
+      instance.setFeatureState(
+        { source: 'parcels', id: previousSelection.current },
+        { selected: false },
+      );
     }
+    if (selectedParcelId !== null) {
+      instance.setFeatureState(
+        { source: 'parcels', id: selectedParcelId },
+        { selected: true },
+      );
+    } else {
+      popup.current?.remove();
+    }
+    previousSelection.current = selectedParcelId;
+  }, [selectedParcelId]);
 
-    return () => {
-      m.off('styledata', onStyleData);
-    };
-  }, [geojsonData, handleParcelClick]);
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance?.isStyleLoaded()) return;
+    const visibility = parcelsVisible ? 'visible' : 'none';
+    for (const layer of ['parcels-fill', 'parcels-outline', 'parcels-circle']) {
+      instance.setLayoutProperty(layer, 'visibility', visibility);
+    }
+    instance.setLayoutProperty(
+      'parcels-label',
+      'visibility',
+      parcelsVisible && labelsVisible ? 'visible' : 'none',
+    );
+  }, [labelsVisible, parcelsVisible]);
 
-  return <div ref={mapContainer} className="w-full h-full" />;
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance?.isStyleLoaded()) return;
+    instance.setPaintProperty('parcels-fill', 'fill-opacity', opacityExpression(parcelOpacity));
+    instance.setPaintProperty(
+      'parcels-circle',
+      'circle-opacity',
+      opacityExpression(Math.min(0.85, parcelOpacity + 0.4)),
+    );
+  }, [parcelOpacity]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance?.isStyleLoaded()) return;
+    const showSatellite = basemap === 'satellite' && Boolean(instance.getLayer('satellite-layer'));
+    instance.setLayoutProperty('street-layer', 'visibility', showSatellite ? 'none' : 'visible');
+    if (instance.getLayer('satellite-layer')) {
+      instance.setLayoutProperty('satellite-layer', 'visibility', showSatellite ? 'visible' : 'none');
+    }
+  }, [basemap]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance || !focusRequest) return;
+    const bounds = addFeatureToBounds(new maplibregl.LngLatBounds(), focusRequest.feature);
+    if (bounds.isEmpty()) return;
+    const geometry = focusRequest.feature.geometry;
+    if (geometry?.type === 'Point') instance.flyTo({ center: bounds.getCenter(), zoom: 18 });
+    else instance.fitBounds(bounds, { padding: 100, maxZoom: 19 });
+    const properties = (focusRequest.feature.properties ?? {}) as Record<string, unknown>;
+    popup.current?.setLngLat(bounds.getCenter()).setHTML(popupHtml(properties)).addTo(instance);
+  }, [focusRequest]);
+
+  return <div ref={mapContainer} className="h-full w-full" />;
 }

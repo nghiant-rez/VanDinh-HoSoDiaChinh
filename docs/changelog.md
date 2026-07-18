@@ -2,6 +2,15 @@
 
 Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
 
+## 2026-07-18 — Map Interaction Baseline
+
+- Map page now loads current parcels once on open and supports exact map-sheet/parcel-number search.
+- MapLibre `feature-state` keeps click/search selection highlighted; popup includes core parcel fields, geometry provenance, and clear-selection behavior.
+- Added parcel/label visibility, parcel opacity, and street/satellite basemap controls. Satellite remains disabled until a licensed XYZ template is configured.
+- Added dependency-free temporary point and polygon sketch modes. Sketches are client-only and do not modify PostGIS.
+- Removed `/map?test=1` automatic import. Opening map is now read-only; database import requires the existing explicit Admin action.
+- Added optional `geometry_source` import/query support plus `backend/migrations/20260718_add_geometry_source.sql`. Migration is local/test only and is not run automatically, so shared database schema remains unchanged.
+
 ## 2026-07-17 — Cross-Machine Launcher Hardening
 
 ### Team Setup
