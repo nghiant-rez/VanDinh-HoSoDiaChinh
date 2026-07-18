@@ -1,6 +1,6 @@
 """GIS router for import/export endpoints."""
 import logging
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -19,6 +19,11 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/gis", tags=["gis"])
+GIS_IMPORT_CONFIRMATION = "NHAP LAI TOAN BO"
+
+
+def is_import_confirmed(value: str | None) -> bool:
+    return value is not None and value.strip().upper() == GIS_IMPORT_CONFIRMATION
 
 
 class ImportResponse(BaseModel):
@@ -48,12 +53,18 @@ def import_status(
 @router.post("/import", response_model=ImportResponse)
 def import_parcels(
     limit_files: int = 0,
+    x_confirm_replace: str | None = Header(None, alias="X-Confirm-Replace"),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN"])),
 ):
     """Import parcels from dc*.txt + dc*.dgn files into PostGIS."""
     if limit_files < 0:
         raise HTTPException(status_code=400, detail="limit_files must be >= 0")
+    if not is_import_confirmed(x_confirm_replace):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Missing destructive import confirmation: {GIS_IMPORT_CONFIRMATION}",
+        )
     try:
         result = import_all_parcels(db, limit_files=limit_files)
         logger.info(

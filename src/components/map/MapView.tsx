@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { getBasemapVisibility, parcelPopupHtml } from '@/lib/map-parcels';
 
 const VAN_DINH_CENTER: [number, number] = [105.764167, 20.734079];
 const EMPTY_GEOJSON: GeoJSON.FeatureCollection = {
@@ -33,6 +34,18 @@ const POLYGON_FILTER: maplibregl.FilterSpecification = [
 
 const POINT_FILTER: maplibregl.FilterSpecification = [
   '==', ['geometry-type'], 'Point',
+];
+
+const VERIFIED_POLYGON_FILTER: maplibregl.FilterSpecification = [
+  'all',
+  POLYGON_FILTER,
+  ['==', ['get', 'geometry_source'], 'dgn_polygon'],
+];
+
+const UNVERIFIED_POLYGON_FILTER: maplibregl.FilterSpecification = [
+  'all',
+  POLYGON_FILTER,
+  ['!=', ['get', 'geometry_source'], 'dgn_polygon'],
 ];
 
 export type ParcelId = string | number;
@@ -99,15 +112,6 @@ function setDrawingData(
   source?.setData(drawingData(completed, draft));
 }
 
-function escapeHtml(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function getParcelId(feature: GeoJSON.Feature): ParcelId | null {
   const id = feature.id ?? feature.properties?.id;
   return typeof id === 'string' || typeof id === 'number' ? id : null;
@@ -136,36 +140,6 @@ function addFeatureToBounds(
   return bounds;
 }
 
-function geometrySourceLabel(value: unknown): string {
-  switch (value) {
-    case 'dgn_polygon': return 'Ranh DGN';
-    case 'area_estimate': return 'Ước tính từ diện tích';
-    case 'centroid_only': return 'Chỉ có điểm tâm';
-    case 'untracked_polygon': return 'Đa giác cũ, chưa phân loại';
-    default: return '';
-  }
-}
-
-function popupHtml(properties: Record<string, unknown>): string {
-  const area = Number(properties.dien_tich || 0).toLocaleString('vi-VN', {
-    maximumFractionDigits: 1,
-  });
-  const geometrySource = geometrySourceLabel(properties.geometry_source);
-  return `
-    <div style="font-family:system-ui,sans-serif;font-size:12px;line-height:1.4;padding:8px 10px;min-width:210px">
-      <div style="font-weight:700;font-size:13px;margin-bottom:6px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">
-        Thửa ${escapeHtml(properties.so_thua)} - Tờ ${escapeHtml(properties.to_ban_do)}
-      </div>
-      <div style="background:#fff7ed;padding:6px 8px;border-radius:6px;margin-bottom:6px;border-left:3px solid #f97316">
-        <div style="font-size:10px;color:#9a3412">Diện tích</div>
-        <div style="font-weight:700;font-size:14px;color:#7c2d12">${area} m²</div>
-      </div>
-      <div><b>Loại đất:</b> ${escapeHtml(properties.loai_dat) || escapeHtml(properties.mdsd2003) || 'Chưa có'}</div>
-      ${properties.xu_dong ? `<div><b>Xứ đồng:</b> ${escapeHtml(properties.xu_dong)}</div>` : ''}
-      ${geometrySource ? `<div><b>Nguồn hình học:</b> ${escapeHtml(geometrySource)}</div>` : ''}
-    </div>`;
-}
-
 function opacityExpression(value: number): maplibregl.ExpressionSpecification {
   return [
     'case',
@@ -173,6 +147,26 @@ function opacityExpression(value: number): maplibregl.ExpressionSpecification {
     Math.min(1, value + 0.3),
     value,
   ];
+}
+
+function polygonOpacityExpression(value: number): maplibregl.ExpressionSpecification {
+  return [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    Math.min(1, value + 0.3),
+    ['==', ['get', 'geometry_source'], 'dgn_polygon'],
+    value,
+    Math.min(value, 0.18),
+  ];
+}
+
+function applyBasemap(instance: maplibregl.Map, basemap: BasemapKind) {
+  const satelliteAvailable = Boolean(instance.getLayer('satellite-layer'));
+  const visibility = getBasemapVisibility(basemap, satelliteAvailable);
+  instance.setLayoutProperty('street-layer', 'visibility', visibility.street);
+  if (satelliteAvailable) {
+    instance.setLayoutProperty('satellite-layer', 'visibility', visibility.satellite);
+  }
 }
 
 export function MapView({
@@ -197,6 +191,7 @@ export function MapView({
   const clickCallback = useRef(onParcelClick);
   const drawCallback = useRef(onDrawnFeatureChange);
   const interactionModeRef = useRef<MapInteractionMode>(interactionMode);
+  const basemapRef = useRef<BasemapKind>(basemap);
   const drawnFeatureRef = useRef<DrawnFeature | null>(drawnFeature);
   const draftCoordinates = useRef<[number, number][]>([]);
   const currentSelection = useRef<ParcelId | null>(selectedParcelId);
@@ -214,6 +209,10 @@ export function MapView({
   useEffect(() => {
     interactionModeRef.current = interactionMode;
   }, [interactionMode]);
+
+  useEffect(() => {
+    basemapRef.current = basemap;
+  }, [basemap]);
 
   useEffect(() => {
     drawnFeatureRef.current = drawnFeature;
@@ -254,15 +253,24 @@ export function MapView({
             filter: POLYGON_FILTER,
             paint: {
               'fill-color': LAND_COLOR,
-              'fill-opacity': opacityExpression(0.4),
+              'fill-opacity': polygonOpacityExpression(0.4),
             },
           },
           {
             id: 'parcels-outline', type: 'line', source: 'parcels',
-            filter: POLYGON_FILTER,
+            filter: VERIFIED_POLYGON_FILTER,
             paint: {
               'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#f97316', '#1e293b'],
               'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 1.5],
+            },
+          },
+          {
+            id: 'parcels-unverified-outline', type: 'line', source: 'parcels',
+            filter: UNVERIFIED_POLYGON_FILTER,
+            paint: {
+              'line-color': ['case', ['boolean', ['feature-state', 'selected'], false], '#f97316', '#dc2626'],
+              'line-width': ['case', ['boolean', ['feature-state', 'selected'], false], 4, 2],
+              'line-dasharray': [2, 2],
             },
           },
           {
@@ -350,6 +358,7 @@ export function MapView({
         },
         'parcels-fill',
       );
+      applyBasemap(instance, basemapRef.current);
     };
 
     const handleParcelClick = (
@@ -363,7 +372,7 @@ export function MapView({
       const properties = (feature.properties ?? {}) as Record<string, unknown>;
       const bounds = addFeatureToBounds(new maplibregl.LngLatBounds(), feature);
       if (id === null || bounds.isEmpty()) return;
-      popup.current?.setLngLat(bounds.getCenter()).setHTML(popupHtml(properties)).addTo(instance);
+      popup.current?.setLngLat(bounds.getCenter()).setHTML(parcelPopupHtml(properties)).addTo(instance);
       clickCallback.current?.({ id, properties, feature });
     };
 
@@ -516,7 +525,7 @@ export function MapView({
     const instance = map.current;
     if (!instance?.isStyleLoaded()) return;
     const visibility = parcelsVisible ? 'visible' : 'none';
-    for (const layer of ['parcels-fill', 'parcels-outline', 'parcels-circle']) {
+    for (const layer of ['parcels-fill', 'parcels-outline', 'parcels-unverified-outline', 'parcels-circle']) {
       instance.setLayoutProperty(layer, 'visibility', visibility);
     }
     instance.setLayoutProperty(
@@ -529,7 +538,7 @@ export function MapView({
   useEffect(() => {
     const instance = map.current;
     if (!instance?.isStyleLoaded()) return;
-    instance.setPaintProperty('parcels-fill', 'fill-opacity', opacityExpression(parcelOpacity));
+    instance.setPaintProperty('parcels-fill', 'fill-opacity', polygonOpacityExpression(parcelOpacity));
     instance.setPaintProperty(
       'parcels-circle',
       'circle-opacity',
@@ -540,11 +549,7 @@ export function MapView({
   useEffect(() => {
     const instance = map.current;
     if (!instance?.isStyleLoaded()) return;
-    const showSatellite = basemap === 'satellite' && Boolean(instance.getLayer('satellite-layer'));
-    instance.setLayoutProperty('street-layer', 'visibility', showSatellite ? 'none' : 'visible');
-    if (instance.getLayer('satellite-layer')) {
-      instance.setLayoutProperty('satellite-layer', 'visibility', showSatellite ? 'visible' : 'none');
-    }
+    applyBasemap(instance, basemap);
   }, [basemap]);
 
   useEffect(() => {
@@ -556,7 +561,7 @@ export function MapView({
     if (geometry?.type === 'Point') instance.flyTo({ center: bounds.getCenter(), zoom: 18 });
     else instance.fitBounds(bounds, { padding: 100, maxZoom: 19 });
     const properties = (focusRequest.feature.properties ?? {}) as Record<string, unknown>;
-    popup.current?.setLngLat(bounds.getCenter()).setHTML(popupHtml(properties)).addTo(instance);
+    popup.current?.setLngLat(bounds.getCenter()).setHTML(parcelPopupHtml(properties)).addTo(instance);
   }, [focusRequest]);
 
   return <div ref={mapContainer} className="h-full w-full" />;

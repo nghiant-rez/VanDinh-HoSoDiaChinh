@@ -48,6 +48,9 @@ Storage: PostgreSQL + PostGIS (`thuadat` table). Geometry columns:
 - `geometry_source` (optional local/test migration) - `dgn_polygon`, `area_estimate`, `centroid_only`, or legacy `untracked_polygon`. Apply `backend/migrations/20260718_add_geometry_source.sql` only to a local/test database until team review.
 - GIST spatial indexes on both columns.
 
+> [!CAUTION]
+> The current `source_proj` is still an assumed VN-2000 TM-3 definition. It has not been proven against authoritative survey control points. Do not describe browser alignment as cadastral accuracy until known source coordinates are transformed, measured in meters against trusted WGS84 points, and the candidate CRS is validated on a local/test database.
+
 Import pipeline (`backend/app/services/gis_service.py`):
 1. Scan `dc*.txt` files in `dgn_source_path`.
 2. Parse pipe-delimited rows via `open_tcvn3` (TCVN3 decode + `sanitize_text`) into `ParcelRecord` (label point + attributes).
@@ -59,7 +62,9 @@ Import pipeline (`backend/app/services/gis_service.py`):
 
 Query: `ST_AsGeoJSON(COALESCE(geom, centroid))` - returns polygon if available, otherwise centroid point. Frontend renders polygon fill + outline layers for Polygon features, circle layer for Point fallback.
 
-Map interaction (`src/app/(dashboard)/map/page.tsx` + `src/components/map/MapView.tsx`): parcels load once on page open; exact sheet/parcel search focuses a feature; MapLibre feature state keeps clicked/search selection visible; popup shows parcel metadata and geometry provenance; controls toggle parcels, labels, opacity, street/satellite basemap; temporary point/polygon sketches stay client-side and never write to PostGIS.
+Map interaction (`src/app/(dashboard)/map/page.tsx` + `src/components/map/MapView.tsx`): parcels load once on page open; exact sheet/parcel search focuses a feature; MapLibre feature state keeps clicked/search selection visible; popup shows parcel metadata and geometry provenance; controls toggle parcels, labels, opacity, street/satellite basemap; temporary point/polygon sketches stay client-side and never write to PostGIS. Verified `dgn_polygon` boundaries use a solid outline. Estimated or legacy-unclassified polygons use a lighter fill and dashed warning outline so approximate geometry is not presented as an authoritative cadastral boundary.
+
+GIS import remains an explicit Admin action. The browser requires the typed phrase `NHAP LAI TOAN BO`, the Next.js proxy requires the matching confirmation header, and FastAPI rejects requests without it before calling the destructive import service. The five-file partial import button is development-only. Imports must still run against a backed-up local/test database because a successful import replaces every parcel and detaches existing parcel-record links.
 
 Satellite imagery is opt-in because imagery providers require their own URL, attribution, access token, and license. Set `NEXT_PUBLIC_SATELLITE_TILE_TEMPLATE` to a licensed XYZ template containing `{z}`, `{x}`, and `{y}`. Optionally set `NEXT_PUBLIC_SATELLITE_ATTRIBUTION`. When no template is configured, the satellite button remains disabled.
 

@@ -10,6 +10,11 @@ Dated log of applied fixes and changes. Open issues live in `security.md`; per-U
 - Added dependency-free temporary point and polygon sketch modes. Sketches are client-only and do not modify PostGIS.
 - Removed `/map?test=1` automatic import. Opening map is now read-only; database import requires the existing explicit Admin action.
 - Added optional `geometry_source` import/query support plus `backend/migrations/20260718_add_geometry_source.sql`. Migration is local/test only and is not run automatically, so shared database schema remains unchanged.
+- Review hardening: estimated or unclassified polygons now use a lighter fill and dashed warning outline with matching legend text; verified DGN polygons remain solid.
+- Review hardening: satellite visibility is reapplied after its raster layer loads, and owner/address fields were restored in the escaped parcel popup.
+- Review hardening: destructive GIS import now requires a typed phrase plus matching confirmation header at both Next.js and FastAPI boundaries. The partial five-file import is development-only.
+- Added focused regression checks for popup escaping/fields, basemap state, import confirmation, and backend rejection before the import service runs.
+- Documented that the current VN-2000 transform remains an assumption until authoritative survey control points validate it in local/test.
 
 ## 2026-07-17 — Cross-Machine Launcher Hardening
 
