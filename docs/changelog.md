@@ -13,8 +13,9 @@ Dated log of applied fixes and changes. Open issues live in `security.md`; per-U
 - Review hardening: estimated or unclassified polygons now use a lighter fill and dashed warning outline with matching legend text; verified DGN polygons remain solid.
 - Review hardening: satellite visibility is reapplied after its raster layer loads, and owner/address fields were restored in the escaped parcel popup.
 - Review hardening: destructive GIS import now requires a typed phrase plus matching confirmation header at both Next.js and FastAPI boundaries. The partial five-file import is development-only.
-- Added focused regression checks for popup escaping/fields, basemap state, import confirmation, and backend rejection before the import service runs.
+- Added focused regression checks for popup escaping/fields and backend rejection before the import service runs.
 - Documented that the current VN-2000 transform remains an assumption until authoritative survey control points validate it in local/test.
+- Simplified review hardening: removed one-use validation and basemap helpers; FastAPI remains the destructive-import authority while the Next.js proxy forwards caller confirmation unchanged.
 
 ## 2026-07-17 — Cross-Machine Launcher Hardening
 

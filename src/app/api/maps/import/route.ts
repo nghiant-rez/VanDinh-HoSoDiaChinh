@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { GIS_IMPORT_CONFIRMATION, isGisImportConfirmed } from '@/lib/map-import';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
 
@@ -9,21 +8,14 @@ export async function POST(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const limitFiles = searchParams.get('limit_files') || '0';
-  const confirmation = request.headers.get('X-Confirm-Replace');
-
-  if (!isGisImportConfirmed(confirmation)) {
-    return NextResponse.json(
-      { error: `Missing destructive import confirmation: ${GIS_IMPORT_CONFIRMATION}` },
-      { status: 400 },
-    );
-  }
+  const confirmation = request.headers.get('X-Confirm-Replace') ?? '';
 
   try {
     const resp = await fetch(`${BACKEND_URL}/api/gis/import?limit_files=${limitFiles}`, {
       method: 'POST',
       headers: {
         'X-User-Id': session.userId.toString(),
-        'X-Confirm-Replace': GIS_IMPORT_CONFIRMATION,
+        'X-Confirm-Replace': confirmation,
       },
     });
 

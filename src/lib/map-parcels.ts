@@ -1,10 +1,5 @@
 export type ParcelFeatureId = string | number;
 
-export type BasemapVisibility = {
-  street: 'visible' | 'none';
-  satellite: 'visible' | 'none';
-};
-
 export function isParcelFeatureCollection(
   value: unknown,
 ): value is GeoJSON.FeatureCollection {
@@ -42,17 +37,6 @@ export function geometrySourceLabel(value: unknown): string {
     case 'untracked_polygon': return 'Đa giác cũ, chưa phân loại';
     default: return '';
   }
-}
-
-export function getBasemapVisibility(
-  basemap: 'street' | 'satellite',
-  satelliteAvailable: boolean,
-): BasemapVisibility {
-  const showSatellite = basemap === 'satellite' && satelliteAvailable;
-  return {
-    street: showSatellite ? 'none' : 'visible',
-    satellite: showSatellite ? 'visible' : 'none',
-  };
 }
 
 function escapeHtml(value: unknown): string {

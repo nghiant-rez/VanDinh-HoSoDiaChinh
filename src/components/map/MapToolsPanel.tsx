@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Upload, Download, Loader2, CheckCircle2, AlertCircle, Database, ChevronLeft, ChevronRight } from 'lucide-react';
-import { GIS_IMPORT_CONFIRMATION, isGisImportConfirmed } from '@/lib/map-import';
+
+const GIS_IMPORT_CONFIRMATION = 'NHAP LAI TOAN BO';
 
 interface ImportResult {
   total_txt_files: number;
@@ -87,7 +88,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
       `Cảnh báo: thao tác này sẽ thay thế toàn bộ thửa đất hiện tại, gỡ liên kết hồ sơ và nhập ${scope}.\n\nGõ ${GIS_IMPORT_CONFIRMATION} để tiếp tục.`,
     );
     if (confirmation === null) return;
-    if (!isGisImportConfirmed(confirmation)) {
+    if (confirmation.trim().toUpperCase() !== GIS_IMPORT_CONFIRMATION) {
       setError(`Xác nhận không đúng. Cần gõ ${GIS_IMPORT_CONFIRMATION}.`);
       return;
     }

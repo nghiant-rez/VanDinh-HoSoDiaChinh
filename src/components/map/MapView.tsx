@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { getBasemapVisibility, parcelPopupHtml } from '@/lib/map-parcels';
+import { parcelPopupHtml } from '@/lib/map-parcels';
 
 const VAN_DINH_CENTER: [number, number] = [105.764167, 20.734079];
 const EMPTY_GEOJSON: GeoJSON.FeatureCollection = {
@@ -162,10 +162,10 @@ function polygonOpacityExpression(value: number): maplibregl.ExpressionSpecifica
 
 function applyBasemap(instance: maplibregl.Map, basemap: BasemapKind) {
   const satelliteAvailable = Boolean(instance.getLayer('satellite-layer'));
-  const visibility = getBasemapVisibility(basemap, satelliteAvailable);
-  instance.setLayoutProperty('street-layer', 'visibility', visibility.street);
+  const showSatellite = basemap === 'satellite' && satelliteAvailable;
+  instance.setLayoutProperty('street-layer', 'visibility', showSatellite ? 'none' : 'visible');
   if (satelliteAvailable) {
-    instance.setLayoutProperty('satellite-layer', 'visibility', visibility.satellite);
+    instance.setLayoutProperty('satellite-layer', 'visibility', showSatellite ? 'visible' : 'none');
   }
 }
 

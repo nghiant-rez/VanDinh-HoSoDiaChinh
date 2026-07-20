@@ -22,10 +22,6 @@ router = APIRouter(prefix="/api/gis", tags=["gis"])
 GIS_IMPORT_CONFIRMATION = "NHAP LAI TOAN BO"
 
 
-def is_import_confirmed(value: str | None) -> bool:
-    return value is not None and value.strip().upper() == GIS_IMPORT_CONFIRMATION
-
-
 class ImportResponse(BaseModel):
     total_txt_files: int
     total_dgn_files: int
@@ -60,7 +56,7 @@ def import_parcels(
     """Import parcels from dc*.txt + dc*.dgn files into PostGIS."""
     if limit_files < 0:
         raise HTTPException(status_code=400, detail="limit_files must be >= 0")
-    if not is_import_confirmed(x_confirm_replace):
+    if x_confirm_replace is None or x_confirm_replace.strip().upper() != GIS_IMPORT_CONFIRMATION:
         raise HTTPException(
             status_code=400,
             detail=f"Missing destructive import confirmation: {GIS_IMPORT_CONFIRMATION}",

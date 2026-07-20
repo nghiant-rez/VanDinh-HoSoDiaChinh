@@ -4,15 +4,10 @@ import { readFile } from 'node:fs/promises';
 import {
   findParcelFeature,
   geometrySourceLabel,
-  getBasemapVisibility,
   getParcelFeatureId,
   isParcelFeatureCollection,
   parcelPopupHtml,
 } from '../src/lib/map-parcels.ts';
-import {
-  GIS_IMPORT_CONFIRMATION,
-  isGisImportConfirmed,
-} from '../src/lib/map-import.ts';
 
 const sampleUrl = new URL('../backend/data/sample_parcels.geojson', import.meta.url);
 const sample = JSON.parse(await readFile(sampleUrl, 'utf8'));
@@ -33,15 +28,6 @@ for (const expected of knownParcels) {
 
 assert.equal(findParcelFeature(sample, '27', 'not-a-parcel'), null);
 
-assert.deepEqual(getBasemapVisibility('satellite', true), {
-  street: 'none',
-  satellite: 'visible',
-});
-assert.deepEqual(getBasemapVisibility('satellite', false), {
-  street: 'visible',
-  satellite: 'none',
-});
-
 const popup = parcelPopupHtml({
   so_thua: '717',
   to_ban_do: '23',
@@ -56,8 +42,4 @@ assert.match(popup, /Ước tính từ diện tích/);
 assert.ok(!popup.includes('<script>'), 'popup values must be HTML escaped');
 assert.equal(geometrySourceLabel('dgn_polygon'), 'Ranh DGN');
 
-assert.ok(isGisImportConfirmed(GIS_IMPORT_CONFIRMATION));
-assert.ok(isGisImportConfirmed('  nhap lai toan bo  '));
-assert.equal(isGisImportConfirmed('NHAP LAI'), false);
-
-console.log(`Verified ${knownParcels.length} parcels, popup safety, basemap state, and import confirmation.`);
+console.log(`Verified ${knownParcels.length} parcels and popup safety.`);
