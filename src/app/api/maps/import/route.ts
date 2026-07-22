@@ -8,12 +8,14 @@ export async function POST(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const limitFiles = searchParams.get('limit_files') || '0';
+  const confirmation = request.headers.get('X-Confirm-Replace') ?? '';
 
   try {
     const resp = await fetch(`${BACKEND_URL}/api/gis/import?limit_files=${limitFiles}`, {
       method: 'POST',
       headers: {
         'X-User-Id': session.userId.toString(),
+        'X-Confirm-Replace': confirmation,
       },
     });
 

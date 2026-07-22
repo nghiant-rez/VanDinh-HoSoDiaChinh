@@ -2,6 +2,21 @@
 
 Dated log of applied fixes and changes. Open issues live in `security.md`; per-UC status in `feature-ownership.md`.
 
+## 2026-07-18 — Map Interaction Baseline
+
+- Map page now loads current parcels once on open and supports exact map-sheet/parcel-number search.
+- MapLibre `feature-state` keeps click/search selection highlighted; popup includes core parcel fields, geometry provenance, and clear-selection behavior.
+- Added parcel/label visibility, parcel opacity, and street/satellite basemap controls. Satellite remains disabled until a licensed XYZ template is configured.
+- Added dependency-free temporary point and polygon sketch modes. Sketches are client-only and do not modify PostGIS.
+- Removed `/map?test=1` automatic import. Opening map is now read-only; database import requires the existing explicit Admin action.
+- Added optional `geometry_source` import/query support plus `backend/migrations/20260718_add_geometry_source.sql`. Migration is local/test only and is not run automatically, so shared database schema remains unchanged.
+- Review hardening: estimated or unclassified polygons now use a lighter fill and dashed warning outline with matching legend text; verified DGN polygons remain solid.
+- Review hardening: satellite visibility is reapplied after its raster layer loads, and owner/address fields were restored in the escaped parcel popup.
+- Review hardening: destructive GIS import now requires a typed phrase plus matching confirmation header at both Next.js and FastAPI boundaries. The partial five-file import is development-only.
+- Added focused regression checks for popup escaping/fields and backend rejection before the import service runs.
+- Documented that the current VN-2000 transform remains an assumption until authoritative survey control points validate it in local/test.
+- Simplified review hardening: removed one-use validation and basemap helpers; FastAPI remains the destructive-import authority while the Next.js proxy forwards caller confirmation unchanged.
+
 ## 2026-07-17 — Cross-Machine Launcher Hardening
 
 ### Team Setup
