@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, BigInteger, Numeric
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, BigInteger, Numeric, Text
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -109,6 +109,7 @@ class HoSo(Base):
     
     chusohuu = Column(String(200), nullable=True)
     trangthai = Column(String(50), default="Hoàn thành")
+    ghichu = Column(Text, nullable=True)
     
     createdbyuserid = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     

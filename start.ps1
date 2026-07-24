@@ -309,60 +309,20 @@ if (-not (Test-Path -LiteralPath $uvicornExe) -or $requirementsHash -ne $install
 }
 Write-Host "       Python environment ready" -ForegroundColor Green
 
-# 4. Install frontend dependencies on a clean clone.
-Write-Host "[4/6] Checking frontend environment..." -ForegroundColor Cyan
-$nodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
-$npmCommand = Get-Command npm.cmd -ErrorAction SilentlyContinue
-if (-not $nodeCommand -or -not $npmCommand) {
-    Stop-Launcher "Node.js and npm not found in PATH."
-}
-$nodeVersionText = & $nodeCommand.Source -p "process.versions.node"
-if ($LASTEXITCODE -ne 0 -or [Version]$nodeVersionText -lt [Version]"20.9.0") {
-    Stop-Launcher "Node.js 20.9.0+ required by Next.js 16; found $nodeVersionText."
-}
-$nextCommand = Join-Path $root "node_modules\.bin\next.cmd"
-if (-not (Test-Path -LiteralPath $nextCommand)) {
-    Write-Host "       Installing frontend dependencies..." -ForegroundColor Yellow
-    $npmExitCode = 1
-    Push-Location $root
-    try {
-        if (Test-Path -LiteralPath (Join-Path $root "package-lock.json")) {
-            & $npmCommand.Source ci
-        } else {
-            & $npmCommand.Source install
-        }
-        $npmExitCode = $LASTEXITCODE
-    } finally {
-        Pop-Location
-    }
-    if ($npmExitCode -ne 0) {
-        Stop-Launcher "npm dependency installation failed. Check network and package-lock.json."
-    }
-}
-Write-Host "       Frontend environment ready" -ForegroundColor Green
+# 3. Start FastAPI backend in new window
+Write-Host "[4/5] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
+Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
+cd '$backendDir'
+.\venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
+"@
 
-# 5. Start FastAPI backend in a separate window using current PowerShell edition.
-$powerShellExecutable = Get-PowerShellExecutable
-$backendPythonLiteral = ConvertTo-PowerShellLiteral -Value $venvPython
-$backendCommand = "& $backendPythonLiteral -m uvicorn app.main:app --reload --port 8000"
-$backendEncodedCommand = ConvertTo-EncodedCommand -Command $backendCommand
-Write-Host "[5/6] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
-Start-Process -FilePath $powerShellExecutable -WorkingDirectory $backendDir -ArgumentList @(
-    "-NoExit",
-    "-EncodedCommand",
-    $backendEncodedCommand
-)
-
-# 6. Start Next.js frontend in a separate window.
-$npmLiteral = ConvertTo-PowerShellLiteral -Value $npmCommand.Source
-$frontendCommand = "& $npmLiteral run dev"
-$frontendEncodedCommand = ConvertTo-EncodedCommand -Command $frontendCommand
-Write-Host "[6/6] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
-Start-Process -FilePath $powerShellExecutable -WorkingDirectory $root -ArgumentList @(
-    "-NoExit",
-    "-EncodedCommand",
-    $frontendEncodedCommand
-)
+# 4. Start Next.js frontend in new window
+Write-Host "[5/5] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
+Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
+cd '$root'
+npm run dev
+"@
 
 Write-Host ""
 Write-Host "All services started in separate windows." -ForegroundColor Green
@@ -370,5 +330,5 @@ Write-Host "  Frontend:  http://localhost:3000" -ForegroundColor Yellow
 Write-Host "  Backend:   http://localhost:8000" -ForegroundColor Yellow
 Write-Host "  Login:     http://localhost:3000/login" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Launcher exiting; service windows remain open." -ForegroundColor DarkGray
+Write-Host "Launcher exiting - service windows will persist. Safe to close this window." -ForegroundColor DarkGray
 Start-Sleep -Seconds 3

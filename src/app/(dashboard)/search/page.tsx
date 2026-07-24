@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, ChevronDown, ChevronRight, Eye, RefreshCw, Folder, Plus } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronRight, Eye, RefreshCw, Folder, Plus, Loader2, Download, Upload } from 'lucide-react';
 import CreateHoSoModal from '@/components/hoso/CreateHoSoModal';
 
 interface StorageItem {
@@ -40,6 +40,7 @@ export default function SearchPage() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [toBanDo, setToBanDo] = useState('');
   const [soThua, setSoThua] = useState('');
+  const [chuSoHuu, setChuSoHuu] = useState('');
   const [selectedKho, setSelectedKho] = useState<string>('');
   const [selectedKe, setSelectedKe] = useState<string>('');
   
@@ -50,6 +51,8 @@ export default function SearchPage() {
     'dia-chinh': true // Mặc định mở rộng hồ sơ địa chính
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
 
   // Fetch danh sách kho/kệ cho dropdown bộ lọc
   useEffect(() => {
@@ -87,6 +90,9 @@ export default function SearchPage() {
       if (soThua.trim()) {
         bodyParams.sothua = soThua.trim();
       }
+      if (chuSoHuu.trim()) {
+        bodyParams.chusohuu = chuSoHuu.trim();
+      }
       if (selectedKho) {
         bodyParams.kholuutruid = Number(selectedKho);
       }
@@ -111,6 +117,46 @@ export default function SearchPage() {
       console.error('Lỗi khi tra cứu hồ sơ:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+
+  const handleDownloadTemplate = () => {
+    window.open('http://localhost:8000/api/hoso/import-template', '_blank');
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("http://localhost:8000/api/hoso/import", {
+          method: "POST",
+          headers: { 'x-user-id': '1' },
+          body: formData,
+      });
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+          let msg = `Import thành công ${result.success_count} hồ sơ.\n`;
+          if (result.errors && result.errors.length > 0) {
+            msg += `\nLỗi:\n${result.errors.join('\n')}`;
+          }
+          alert(msg);
+          handleSearch();
+      } else {
+          alert("Lỗi khi import: " + (result.detail || result.error || "Không xác định"));
+      }
+    } catch (error) {
+      console.error("Import Error:", error);
+      alert("Không thể kết nối đến API Import.");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -144,7 +190,7 @@ export default function SearchPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Tìm kiếm toàn văn (OCR)..."
+              placeholder="Tìm kiếm hồ sơ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -153,12 +199,14 @@ export default function SearchPage() {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-slate-400" />
             </div>
-            <button 
-              onClick={handleSearch}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-500"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+              <button 
+                onClick={handleSearch}
+                className="text-slate-400 hover:text-blue-500"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -228,6 +276,20 @@ export default function SearchPage() {
           </div>
         </div>
 
+        {/* Chủ sở hữu */}
+        <div className="mb-6 border-t border-slate-100 pt-5">
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Chủ sở hữu</h3>
+          <div>
+            <input
+              type="text"
+              placeholder="Nhập tên chủ sở hữu..."
+              value={chuSoHuu}
+              onChange={(e) => setChuSoHuu(e.target.value)}
+              className="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+            />
+          </div>
+        </div>
+
         {/* Vị trí vật lý */}
         <div className="mb-6 border-t border-slate-100 pt-5">
           <h3 className="text-sm font-semibold text-slate-700 mb-3">Vị trí lưu trữ vật lý</h3>
@@ -275,13 +337,31 @@ export default function SearchPage() {
           <div className="text-slate-600 text-sm font-medium">
             Tìm thấy <span className="text-blue-600 font-bold">{results.length}</span> hồ sơ
           </div>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700 hover:shadow flex items-center transition-all active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Thêm mới
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleDownloadTemplate}
+              className="px-4 py-2 bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-200 flex items-center transition-all active:scale-[0.98]"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Tải mẫu
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-emerald-700 hover:shadow flex items-center transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {importing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
+              {importing ? 'Đang import...' : 'Import Excel'}
+            </button>
+            <input type="file" hidden ref={fileInputRef} accept=".xlsx, .xls" onChange={handleImportExcel} />
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700 hover:shadow flex items-center transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Thêm mới
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex flex-col">

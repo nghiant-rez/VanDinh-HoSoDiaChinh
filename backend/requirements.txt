@@ -6,3 +6,5 @@ psycopg2-binary==2.9.*
 python-multipart==0.0.*
 shapely==2.0.*
 bcrypt==4.1.*
+pandas
+openpyxl

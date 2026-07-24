@@ -38,7 +38,7 @@ class Settings(BaseSettings):
         "+x_0=500000 +y_0=0 +datum=WGS84 +units=m +no_defs"
     )
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()

@@ -11,7 +11,7 @@ class HopSoLuuTruCreate(HopSoLuuTruBase):
     tangluutruid: int
 
 class HoSoCreate(BaseModel):
-    idcha: Optional[int] = None
+    mahoso_cha: Optional[str] = None
     mahoso: str
     tenhoso: str
     loaihosoid: Optional[int] = None
@@ -28,6 +28,7 @@ class HoSoCreate(BaseModel):
     
     chusohuu: Optional[str] = None
     trangthai: Optional[str] = "Hoàn thành"
+    ghichu: Optional[str] = None
 
 class HoSoSearchRequest(BaseModel):
     query: Optional[str] = None # For OCR Full-Text Search
@@ -35,6 +36,7 @@ class HoSoSearchRequest(BaseModel):
     loaihosoids: Optional[List[int]] = None
     tobando: Optional[str] = None
     sothua: Optional[str] = None
+    chusohuu: Optional[str] = None
     kholuutruid: Optional[int] = None
     keluutruid: Optional[int] = None
     tangluutruid: Optional[int] = None
@@ -100,6 +102,7 @@ class HoSoResponse(BaseModel):
     hopsoluutruid: Optional[int] = None
     chusohuu: Optional[str] = None
     trangthai: Optional[str] = None
+    ghichu: Optional[str] = None
     attachments: List[AttachmentResponse] = Field(default_factory=list)
     thua_dat: Optional[ThuaDatResponse] = None
     kho_luu_tru: Optional[KhoLuuTruSimple] = None

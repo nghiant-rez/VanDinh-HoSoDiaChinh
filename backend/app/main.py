@@ -1,12 +1,16 @@
+import os
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.routers import auth, storage, hoso
 from app.routers import gis
 from app.database import engine, Base
 from app import models  # ensure all models registered before create_all
 
 Base.metadata.create_all(bind=engine)
+
+os.makedirs("uploads", exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +28,9 @@ app.include_router(auth.router)
 app.include_router(storage.router)
 app.include_router(hoso.router)
 app.include_router(gis.router)
+
+app.mount("/static/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 @app.get("/api/health")
 def health():

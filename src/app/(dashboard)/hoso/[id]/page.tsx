@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FileText, Map as MapIcon, History, FileDown, GitMerge } from 'lucide-react';
 import { GenealogyTimeline } from '@/components/hoso/GenealogyTimeline';
@@ -10,7 +10,7 @@ export default function DossierDetailPage() {
   const router = useRouter();
   const [dossier, setDossier] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'ocr' | 'map' | 'history'>('ocr');
+  const [activeTab, setActiveTab] = useState<'map' | 'history'>('map');
 
   const [lineageData, setLineageData] = useState<any[]>([]);
 
@@ -72,6 +72,8 @@ export default function DossierDetailPage() {
     if (id) fetchDossier();
   }, [id]);
 
+
+
   if (loading) return <div className="flex h-full items-center justify-center">Đang tải dữ liệu hồ sơ...</div>;
   if (!dossier) return <div className="flex h-full items-center justify-center text-red-500">Không tìm thấy hồ sơ!</div>;
 
@@ -127,9 +129,11 @@ export default function DossierDetailPage() {
               <FileText className="w-4 h-4 text-indigo-600" />
               Tài liệu Scan gốc
             </div>
-            {primaryAttachment && (
-              <span className="text-xs text-slate-500">{primaryAttachment.documentname}</span>
-            )}
+            <div className="flex items-center gap-2">
+              {primaryAttachment && (
+                <span className="text-xs text-slate-500">{primaryAttachment.documentname}</span>
+              )}
+            </div>
           </div>
           <div className="flex-1 bg-slate-200 border border-slate-200 rounded-b-lg overflow-hidden flex items-center justify-center relative shadow-inner">
             {primaryAttachment ? (
@@ -157,12 +161,7 @@ export default function DossierDetailPage() {
         {/* Right Side: OCR Text / GIS Map */}
         <div className="w-1/2 flex flex-col bg-white">
           <div className="flex border-b border-slate-200 bg-slate-50 px-2 pt-2 gap-1 overflow-x-auto custom-scrollbar">
-            <button 
-              onClick={() => setActiveTab('ocr')}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'ocr' ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-t-lg'}`}
-            >
-              <FileText className="w-4 h-4" /> Nội dung OCR
-            </button>
+
             <button 
               onClick={() => setActiveTab('map')}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'map' ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-t-lg'}`}
@@ -178,15 +177,7 @@ export default function DossierDetailPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/50">
-            {activeTab === 'ocr' && (
-              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                {primaryAttachment?.ocrextractedtext ? (
-                  <div dangerouslySetInnerHTML={{ __html: primaryAttachment.ocrextractedtext.replace(/\n/g, '<br/>') }} />
-                ) : (
-                  <p className="text-slate-500 italic text-center py-10">Không có dữ liệu văn bản bóc tách cho tài liệu này.</p>
-                )}
-              </div>
-            )}
+
 
             {activeTab === 'map' && (
               <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-white rounded-xl border border-slate-200 shadow-sm">
