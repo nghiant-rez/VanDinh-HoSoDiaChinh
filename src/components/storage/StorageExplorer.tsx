@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Building2, Server, Layers, Archive, FileText, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import StorageModal from './StorageModal';
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
@@ -12,7 +13,7 @@ type Ke = { id: number; tenke: string; kholuutruid: number; tangs: Tang[] };
 type Kho = { id: number; makho: string; tenkho: string; kes: Ke[] };
 
 const TreeNode = ({
-  title, subtitle, icon: Icon, children, level, userRole, onAdd, onEdit, onDelete
+  title, subtitle, icon: Icon, children, level, userRole, onAdd, onEdit, onDelete, onClickNode
 }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const isLeaf = !children || children.length === 0;
@@ -23,7 +24,13 @@ const TreeNode = ({
       <div
         className="group flex items-center justify-between py-2.5 pr-4 border-b border-transparent hover:bg-slate-50 hover:border-slate-100 transition-colors cursor-pointer"
         style={{ paddingLeft: `${paddingLeft}px` }}
-        onClick={() => !isLeaf && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (onClickNode) {
+            onClickNode();
+          } else if (!isLeaf) {
+            setIsOpen(!isOpen);
+          }
+        }}
       >
         <div className="flex items-center gap-2 text-slate-700">
           <span className="w-5 flex justify-center text-slate-400">
@@ -82,6 +89,7 @@ const TreeNode = ({
 };
 
 export default function StorageExplorer({ treeData, userRole, onRefresh }: { treeData: Kho[], userRole: string, onRefresh: () => void }) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<{ level: number, editData: any, parentId?: number }>({ level: 0, editData: null });
 
@@ -223,6 +231,7 @@ export default function StorageExplorer({ treeData, userRole, onRefresh }: { tre
                           <TreeNode
                             key={hoso.id} level={4} userRole={userRole}
                             title={hoso.tenhoso} subtitle={hoso.mahoso} icon={FileText}
+                            onClickNode={() => router.push(`/hoso/${hoso.id}`)}
                           />
                         ))}
                       </TreeNode>

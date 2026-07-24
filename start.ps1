@@ -111,7 +111,7 @@ Write-Host "       Python environment ready" -ForegroundColor Green
 
 # 3. Start FastAPI backend in new window
 Write-Host "[4/5] Starting FastAPI backend on :8000..." -ForegroundColor Cyan
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
 cd '$backendDir'
 .\venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
@@ -119,7 +119,7 @@ uvicorn app.main:app --reload --port 8000
 
 # 4. Start Next.js frontend in new window
 Write-Host "[5/5] Starting Next.js frontend on :3000..." -ForegroundColor Cyan
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", @"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", @"
 cd '$root'
 npm run dev
 "@
@@ -130,5 +130,5 @@ Write-Host "  Frontend:  http://localhost:3000" -ForegroundColor Yellow
 Write-Host "  Backend:   http://localhost:8000" -ForegroundColor Yellow
 Write-Host "  Login:     http://localhost:3000/login" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Launcher exiting — service windows will persist. Safe to close this window." -ForegroundColor DarkGray
+Write-Host "Launcher exiting - service windows will persist. Safe to close this window." -ForegroundColor DarkGray
 Start-Sleep -Seconds 3

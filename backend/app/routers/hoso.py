@@ -1,4 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
+import io
+import os
+import shutil
+import pandas as pd
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -41,6 +46,10 @@ def search_hoso(
             query = query.filter(ThuaDat.tobando.ilike(f"%{request.tobando}%"))
         if request.sothua:
             query = query.filter(ThuaDat.sothua.ilike(f"%{request.sothua}%"))
+            
+    # Lọc theo chủ sở hữu
+    if request.chusohuu:
+        query = query.filter(HoSo.chusohuu.ilike(f"%{request.chusohuu}%"))
             
     # Lọc theo vị trí lưu trữ (Drill-down)
     if request.kholuutruid:
@@ -126,8 +135,16 @@ def create_hoso(
 
         thuadat_id = thuadat.id
 
+    # Handle idcha from mahoso_cha
+    idcha = None
+    if request.mahoso_cha:
+        parent_hoso = db.query(HoSo).filter(HoSo.mahoso == request.mahoso_cha).first()
+        if not parent_hoso:
+            raise HTTPException(status_code=400, detail=f"Không tìm thấy hồ sơ gốc có mã '{request.mahoso_cha}'")
+        idcha = parent_hoso.id
+
     new_hoso = HoSo(
-        idcha=request.idcha,
+        idcha=idcha,
         mahoso=request.mahoso,
         tenhoso=request.tenhoso,
         loaihosoid=request.loaihosoid,
@@ -139,6 +156,7 @@ def create_hoso(
         hopsoluutruid=request.hopsoluutruid,
         chusohuu=request.chusohuu,
         trangthai=request.trangthai,
+        ghichu=request.ghichu,
         createdbyuserid=user_id
     )
     db.add(new_hoso)
@@ -167,4 +185,41 @@ def get_hoso_lineage(
         "parent": parent,
         "children": children
     }
+
+@router.post("/{hoso_id}/attachments")
+def upload_attachments(
+    hoso_id: int,
+    files: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"]))
+):
+    hoso = db.query(HoSo).filter(HoSo.id == hoso_id).first()
+    if not hoso:
+        raise HTTPException(status_code=404, detail="Hồ sơ không tồn tại")
+        
+    upload_dir = os.path.join("uploads", "hoso", str(hoso_id))
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    uploaded_records = []
+    
+    for file in files:
+        filename = file.filename or "unknown"
+        file_extension = os.path.splitext(filename)[1].lower()
+        file_path = os.path.join(upload_dir, filename)
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        attachment = Attachments(
+            hosoid=hoso_id,
+            documentname=filename,
+            extension=file_extension,
+            storagepath=file_path.replace("\\", "/"),
+            uploadedbyuserid=current_user.id
+        )
+        db.add(attachment)
+        uploaded_records.append(attachment)
+        
+    db.commit()
+    return {"message": f"Đã upload {len(files)} tệp thành công"}
 
