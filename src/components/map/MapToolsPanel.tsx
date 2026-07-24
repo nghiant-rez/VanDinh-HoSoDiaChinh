@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Download, Loader2, CheckCircle2, AlertCircle, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const GIS_IMPORT_CONFIRMATION = 'NHAP LAI TOAN BO';
 
 interface ImportResult {
   total_txt_files: number;
@@ -16,16 +18,14 @@ interface ImportResult {
 interface MapToolsPanelProps {
   onImportComplete?: (data: GeoJSON.FeatureCollection) => void;
   parcelCount: number;
-  autoImport?: number;
 }
 
-export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }: MapToolsPanelProps) {
+export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelProps) {
   const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const autoImported = useRef(false);
   const [sourcePath, setSourcePath] = useState<string>('');
 
   useEffect(() => {
@@ -45,7 +45,10 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
       const importUrl = limitFiles > 0
         ? `/api/maps/import?limit_files=${limitFiles}`
         : '/api/maps/import';
-      const importResp = await fetch(importUrl, { method: 'POST' });
+      const importResp = await fetch(importUrl, {
+        method: 'POST',
+        headers: { 'X-Confirm-Replace': GIS_IMPORT_CONFIRMATION },
+      });
       if (!importResp.ok) {
         const err = await importResp.json();
         throw new Error(err.error || 'Import failed');
@@ -77,12 +80,20 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
     }
   };
 
-  useEffect(() => {
-    if (autoImport > 0 && !autoImported.current) {
-      autoImported.current = true;
-      handleImport(autoImport);
+  const requestImport = (limitFiles: number) => {
+    const scope = limitFiles > 0
+      ? `${limitFiles} file đầu tiên`
+      : 'toàn bộ dữ liệu nguồn';
+    const confirmation = window.prompt(
+      `Cảnh báo: thao tác này sẽ thay thế toàn bộ thửa đất hiện tại, gỡ liên kết hồ sơ và nhập ${scope}.\n\nGõ ${GIS_IMPORT_CONFIRMATION} để tiếp tục.`,
+    );
+    if (confirmation === null) return;
+    if (confirmation.trim().toUpperCase() !== GIS_IMPORT_CONFIRMATION) {
+      setError(`Xác nhận không đúng. Cần gõ ${GIS_IMPORT_CONFIRMATION}.`);
+      return;
     }
-  }, [autoImport]);
+    void handleImport(limitFiles);
+  };
 
   const handleExport = async () => {
     try {
@@ -153,7 +164,7 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
                     Chưa tìm thấy thư mục dữ liệu. Tạo file{' '}
                     <span className="font-mono">backend/.env</span> với dòng:{' '}
                     <span className="font-mono block mt-1 bg-bg-main px-2 py-1 rounded">
-                      DGN_SOURCE_PATH="đường/dẫn/tới/Ban Do"
+                      DGN_SOURCE_PATH=&quot;đường/dẫn/tới/Ban Do&quot;
                     </span>
                   </div>
                 )}
@@ -164,8 +175,13 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
                   <div>Chuyển đổi sang WGS84 tự động</div>
                 </div>
 
+                <div className="rounded-lg border border-danger/30 bg-danger/5 p-3 text-xs leading-5 text-danger">
+                  Nhập lại sẽ thay thế toàn bộ thửa đất và gỡ liên kết hồ sơ hiện có.
+                  Chỉ dùng với cơ sở dữ liệu local/test đã sao lưu.
+                </div>
+
                 <button
-                  onClick={() => handleImport(0)}
+                  onClick={() => requestImport(0)}
                   disabled={importing}
                   className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                 >
@@ -182,13 +198,15 @@ export function MapToolsPanel({ onImportComplete, parcelCount, autoImport = 0 }:
                   )}
                 </button>
 
-                <button
-                  onClick={() => handleImport(5)}
-                  disabled={importing}
-                  className="w-full py-2 bg-bg-main text-text-primary rounded-lg text-xs font-medium hover:bg-border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {importing ? '' : 'Thử nghiệm: nhập 5 file đầu tiên'}
-                </button>
+                {process.env.NODE_ENV === 'development' && (
+                  <button
+                    onClick={() => requestImport(5)}
+                    disabled={importing}
+                    className="w-full py-2 bg-bg-main text-text-primary rounded-lg text-xs font-medium hover:bg-border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {importing ? '' : 'Local/test: nhập 5 file đầu tiên'}
+                  </button>
+                )}
 
                 {/* Import result */}
                 {importResult && (
