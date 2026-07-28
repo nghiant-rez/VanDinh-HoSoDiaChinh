@@ -18,7 +18,7 @@ class HoSoCreate(BaseModel):
     
     tobando: Optional[str] = None
     sothua: Optional[str] = None
-    dientich: Optional[int] = None
+    dientich: Optional[float] = None
     
     duanid: Optional[int] = None
     kholuutruid: Optional[int] = None
@@ -38,7 +38,7 @@ class HoSoUpdate(BaseModel):
     
     tobando: Optional[str] = None
     sothua: Optional[str] = None
-    dientich: Optional[int] = None
+    dientich: Optional[float] = None
     
     duanid: Optional[int] = None
     kholuutruid: Optional[int] = None
