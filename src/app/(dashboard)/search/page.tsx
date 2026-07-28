@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, ChevronDown, ChevronRight, Eye, RefreshCw, Folder, Plus, Loader2, Download, Upload } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronRight, Eye, RefreshCw, Folder, Plus, Loader2, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import CreateHoSoModal from '@/components/hoso/CreateHoSoModal';
+import EditHoSoModal from '@/components/hoso/EditHoSoModal';
 
 interface StorageItem {
   id: number;
@@ -51,6 +52,8 @@ export default function SearchPage() {
     'dia-chinh': true // Mặc định mở rộng hồ sơ địa chính
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [hosoToEdit, setHosoToEdit] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
 
@@ -157,6 +160,26 @@ export default function SearchPage() {
     } finally {
       setImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa hồ sơ này? Tất cả file đính kèm cũng sẽ bị xóa.')) return;
+    try {
+      const res = await fetch(`http://localhost:8000/api/hoso/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': '1' }
+      });
+      if (res.ok) {
+        alert('Xóa hồ sơ thành công');
+        handleSearch();
+      } else {
+        const err = await res.json().catch(()=>({}));
+        alert(err.detail || 'Lỗi khi xóa hồ sơ');
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa:', error);
+      alert('Không thể kết nối máy chủ');
     }
   };
 
@@ -454,13 +477,32 @@ export default function SearchPage() {
 
                         {/* Thao tác */}
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            onClick={() => router.push(`/hoso/${row.id}`)}
-                            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm gap-1 hover:underline"
-                          >
-                            <Eye className="w-4 h-4" />
-                            Xem
-                          </button>
+                          <div className="flex items-center justify-center gap-3">
+                            <button
+                              onClick={() => router.push(`/hoso/${row.id}`)}
+                              title="Xem chi tiết"
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setHosoToEdit(row);
+                                setIsEditModalOpen(true);
+                              }}
+                              title="Sửa hồ sơ"
+                              className="text-amber-500 hover:text-amber-700 transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(row.id)}
+                              title="Xóa hồ sơ"
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -479,6 +521,19 @@ export default function SearchPage() {
           handleSearch();
         }} 
       />
+      {isEditModalOpen && (
+        <EditHoSoModal 
+          isOpen={isEditModalOpen} 
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setHosoToEdit(null);
+          }} 
+          onSuccess={() => {
+            handleSearch();
+          }}
+          hosoData={hosoToEdit}
+        />
+      )}
     </div>
   );
 }

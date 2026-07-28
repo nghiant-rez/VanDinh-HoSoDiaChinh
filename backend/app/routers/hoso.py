@@ -11,7 +11,7 @@ from typing import List
 
 from app.dependencies import get_db, require_roles
 from app.models import HoSo, Attachments, ThuaDat, User
-from app.schemas import HoSoSearchRequest, HoSoResponse, HoSoCreate, HoSoLineageResponse
+from app.schemas import HoSoSearchRequest, HoSoResponse, HoSoCreate, HoSoUpdate, HoSoLineageResponse
 
 router = APIRouter(
     prefix="/api/hoso",
@@ -164,6 +164,70 @@ def create_hoso(
     db.refresh(new_hoso)
     
     return new_hoso
+
+@router.put("/{hoso_id}", response_model=HoSoResponse)
+def update_hoso(
+    hoso_id: int,
+    request: HoSoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(["ADMIN", "STAFF"])),
+):
+    hoso = db.query(HoSo).filter(HoSo.id == hoso_id).first()
+    if not hoso:
+        raise HTTPException(status_code=404, detail="Hồ sơ không tồn tại")
+
+    # Handle ThuaDat update if needed
+    if request.tobando is not None or request.sothua is not None:
+        tobando = request.tobando if request.tobando is not None else (hoso.thua_dat.tobando if hoso.thua_dat else None)
+        sothua = request.sothua if request.sothua is not None else (hoso.thua_dat.sothua if hoso.thua_dat else None)
+        dientich = request.dientich if request.dientich is not None else (hoso.thua_dat.dientich if hoso.thua_dat else 0)
+        
+        if tobando and sothua:
+            thuadat = db.query(ThuaDat).filter(
+                ThuaDat.tobando == tobando,
+                ThuaDat.sothua == sothua
+            ).first()
+            if not thuadat:
+                thuadat = ThuaDat(tobando=tobando, sothua=sothua, dientich=dientich)
+                db.add(thuadat)
+                db.flush()
+            hoso.thuadatid = thuadat.id
+
+    if request.mahoso_cha is not None:
+        if request.mahoso_cha == "":
+            hoso.idcha = None
+        else:
+            parent_hoso = db.query(HoSo).filter(HoSo.mahoso == request.mahoso_cha).first()
+            if not parent_hoso:
+                raise HTTPException(status_code=400, detail=f"Không tìm thấy hồ sơ gốc có mã '{request.mahoso_cha}'")
+            hoso.idcha = parent_hoso.id
+
+    update_data = request.dict(exclude_unset=True, exclude={'tobando', 'sothua', 'dientich', 'mahoso_cha'})
+    for key, value in update_data.items():
+        setattr(hoso, key, value)
+
+    db.commit()
+    db.refresh(hoso)
+    return hoso
+
+@router.delete("/{hoso_id}")
+def delete_hoso(
+    hoso_id: int,
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(require_roles(["ADMIN", "STAFF"])),
+):
+    hoso = db.query(HoSo).filter(HoSo.id == hoso_id).first()
+    if not hoso:
+        raise HTTPException(status_code=404, detail="Hồ sơ không tồn tại")
+    
+    # Also delete attachments folder
+    upload_dir = os.path.join("uploads", "hoso", str(hoso_id))
+    if os.path.exists(upload_dir):
+        shutil.rmtree(upload_dir)
+        
+    db.delete(hoso)
+    db.commit()
+    return {"message": "Đã xóa hồ sơ thành công"}
 
 @router.get("/{hoso_id}/lineage", response_model=HoSoLineageResponse)
 def get_hoso_lineage(
