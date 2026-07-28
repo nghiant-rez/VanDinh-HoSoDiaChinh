@@ -30,6 +30,26 @@ class HoSoCreate(BaseModel):
     trangthai: Optional[str] = "Hoàn thành"
     ghichu: Optional[str] = None
 
+class HoSoUpdate(BaseModel):
+    mahoso_cha: Optional[str] = None
+    mahoso: Optional[str] = None
+    tenhoso: Optional[str] = None
+    loaihosoid: Optional[int] = None
+    
+    tobando: Optional[str] = None
+    sothua: Optional[str] = None
+    dientich: Optional[int] = None
+    
+    duanid: Optional[int] = None
+    kholuutruid: Optional[int] = None
+    keluutruid: Optional[int] = None
+    tangluutruid: Optional[int] = None
+    hopsoluutruid: Optional[int] = None
+    
+    chusohuu: Optional[str] = None
+    trangthai: Optional[str] = None
+    ghichu: Optional[str] = None
+
 class HoSoSearchRequest(BaseModel):
     query: Optional[str] = None # For OCR Full-Text Search
     loaihosoid: Optional[int] = None
