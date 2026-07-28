@@ -212,6 +212,7 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
                     <option value="3">Dự án</option>
                     <option value="4">Cấp đất</option>
                     <option value="5">Giao đất / Thuê đất</option>
+                    <option value="6">Khác</option>
                     <option value="7">Tài nguyên môi trường</option>
                   </select>
                 </div>
@@ -259,7 +260,7 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Diện tích (m2)</label>
-                <input type="number" name="dientich" value={formData.dientich} onChange={handleInputChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Nhập diện tích..." />
+                <input type="number" step="any" name="dientich" value={formData.dientich} onChange={handleInputChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Nhập diện tích..." />
               </div>
             </div>
           )}

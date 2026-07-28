@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FileText, Map as MapIcon, History, FileDown, GitMerge } from 'lucide-react';
 import { GenealogyTimeline } from '@/components/hoso/GenealogyTimeline';
+import { MapView } from '@/components/map/MapView';
 
 export default function DossierDetailPage() {
   const { id } = useParams();
@@ -13,6 +14,27 @@ export default function DossierDetailPage() {
   const [activeTab, setActiveTab] = useState<'map' | 'history'>('map');
 
   const [lineageData, setLineageData] = useState<any[]>([]);
+  const [geojsonData, setGeojsonData] = useState<any>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'map' && dossier?.thua_dat && !geojsonData) {
+      setMapLoading(true);
+      fetch(`http://localhost:8000/api/gis/parcels?so_thua=${dossier.thua_dat.sothua}&to_ban_do=${dossier.thua_dat.tobando}`, { headers: { 'x-user-id': '1' } })
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
+        .then(data => {
+          setGeojsonData(data);
+          setMapLoading(false);
+        })
+        .catch(err => {
+          console.error('Lỗi tải bản đồ:', err);
+          setMapLoading(false);
+        });
+    }
+  }, [activeTab, dossier, geojsonData]);
 
   useEffect(() => {
     const fetchDossier = async () => {
@@ -180,9 +202,22 @@ export default function DossierDetailPage() {
 
 
             {activeTab === 'map' && (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-white rounded-xl border border-slate-200 shadow-sm">
-                <MapIcon className="w-16 h-16 mb-4 text-slate-300" />
-                <p>Bản đồ số đang được tải...</p>
+              <div className="h-full w-full relative rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                {mapLoading && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-white/80 z-10">
+                    <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                    <p>Đang tải dữ liệu bản đồ...</p>
+                  </div>
+                )}
+                {!mapLoading && (!geojsonData || !geojsonData.features || geojsonData.features.length === 0) && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 bg-white z-10">
+                    <MapIcon className="w-16 h-16 mb-4 text-slate-300" />
+                    <p>Không có dữ liệu không gian cho thửa đất này.</p>
+                  </div>
+                )}
+                {geojsonData && geojsonData.features && geojsonData.features.length > 0 && (
+                  <MapView geojsonData={geojsonData} />
+                )}
               </div>
             )}
 

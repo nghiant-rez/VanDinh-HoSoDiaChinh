@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { GitCommit, GitMerge, FileText, ArrowDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface LinkedDossier {
   id: number;
@@ -17,6 +18,8 @@ interface GenealogyTimelineProps {
 }
 
 export function GenealogyTimeline({ links }: GenealogyTimelineProps) {
+  const router = useRouter();
+
   if (!links || links.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-slate-500">
@@ -40,7 +43,10 @@ export function GenealogyTimeline({ links }: GenealogyTimelineProps) {
               <div className="absolute top-10 left-6 bottom-[-30px] w-0.5 bg-indigo-200" />
             )}
             
-            <div className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${link.isCurrent ? 'bg-indigo-50 border-indigo-300 shadow-md ring-1 ring-indigo-200' : 'bg-white border-slate-200 hover:border-indigo-300'}`}>
+            <div 
+              onClick={() => router.push(`/hoso/${link.id}`)}
+              className={`flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${link.isCurrent ? 'bg-indigo-50 border-indigo-300 shadow-md ring-1 ring-indigo-200' : 'bg-white border-slate-200 hover:border-indigo-400'}`}
+            >
               
               <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 z-10 border-4 ${link.isCurrent ? 'bg-indigo-600 border-indigo-100 text-white' : 'bg-white border-indigo-100 text-indigo-500'}`}>
                 {index === 0 ? <GitCommit className="w-5 h-5" /> : <ArrowDown className="w-5 h-5" />}
