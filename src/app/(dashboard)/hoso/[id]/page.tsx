@@ -159,18 +159,33 @@ export default function DossierDetailPage() {
           </div>
           <div className="flex-1 bg-slate-200 border border-slate-200 rounded-b-lg overflow-hidden flex items-center justify-center relative shadow-inner">
             {primaryAttachment ? (
-              // Sử dụng thẻ object hoặc iframe để nhúng PDF trực tiếp từ backend (hoặc localhost) một cách tinh gọn
-              <object 
-                data={`http://localhost:8000/static/${primaryAttachment.storagepath}`}
-                type="application/pdf"
-                className="w-full h-full"
-              >
-                <div className="flex flex-col items-center justify-center text-slate-500">
-                  <FileText className="w-12 h-12 mb-2 text-slate-300" />
-                  <p>Trình duyệt không hỗ trợ xem PDF trực tiếp.</p>
-                  <a href="#" className="text-indigo-600 hover:underline mt-2">Vui lòng tải xuống file</a>
+              ['.pdf', '.jpg', '.jpeg', '.png'].includes(primaryAttachment.extension?.toLowerCase()) ? (
+                // Sử dụng thẻ object hoặc iframe để nhúng PDF trực tiếp từ backend (hoặc localhost) một cách tinh gọn
+                <object 
+                  data={`http://localhost:8000/static/${primaryAttachment.storagepath}`}
+                  type={primaryAttachment.extension?.toLowerCase() === '.pdf' ? "application/pdf" : `image/${primaryAttachment.extension?.replace('.', '')}`}
+                  className="w-full h-full"
+                >
+                  <div className="flex flex-col items-center justify-center text-slate-500">
+                    <FileText className="w-12 h-12 mb-2 text-slate-300" />
+                    <p>Trình duyệt không hỗ trợ xem trực tiếp.</p>
+                    <a href={`http://localhost:8000/static/${primaryAttachment.storagepath}`} className="text-indigo-600 hover:underline mt-2">Vui lòng tải xuống file</a>
+                  </div>
+                </object>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-slate-500 bg-white p-8 rounded-xl border border-slate-200 shadow-sm m-4 text-center">
+                  <FileDown className="w-16 h-16 mb-4 text-indigo-300" />
+                  <p className="font-medium text-slate-700 mb-2">Trình duyệt không hỗ trợ xem trước định dạng {primaryAttachment.extension || 'này'}</p>
+                  <p className="text-sm mb-4">Vui lòng tải file về máy để xem nội dung.</p>
+                  <a 
+                    href={`http://localhost:8000/static/${primaryAttachment.storagepath}`} 
+                    target="_blank"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                  >
+                    <FileDown className="w-4 h-4" /> Tải xuống file gốc
+                  </a>
                 </div>
-              </object>
+              )
             ) : (
               <div className="text-slate-400 flex flex-col items-center">
                 <FileText className="w-16 h-16 mb-4 text-slate-300" />

@@ -64,6 +64,7 @@ class HoSoSearchRequest(BaseModel):
     limit: int = 50
     offset: int = 0
 
+
 class AttachmentResponse(BaseModel):
     id: int
     documentname: str
@@ -132,6 +133,22 @@ class HoSoResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class HoSoSearchResponse(BaseModel):
+    items: List[HoSoResponse]
+    total: int
+
+class StorageStats(BaseModel):
+    kho: int
+    ke: int
+    tang: int
+    hop: int
+
+class DashboardStatsResponse(BaseModel):
+    total_hoso: int
+    total_thuadat: int
+    storage_stats: StorageStats
+    recent_activities: List[HoSoResponse]
 
 class HoSoLineageResponse(BaseModel):
     parent: Optional[HoSoResponse] = None

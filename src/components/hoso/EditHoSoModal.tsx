@@ -126,16 +126,26 @@ export default function EditHoSoModal({ isOpen, onClose, onSuccess, hosoData }: 
         const updatedHoso = await res.json();
         
         if (files.length > 0 && updatedHoso.id) {
-          const formDataToUpload = new FormData();
-          files.forEach(file => {
-            formDataToUpload.append('files', file);
-          });
-          
-          await fetch(`http://localhost:8000/api/hoso/${updatedHoso.id}/attachments`, {
-            method: 'POST',
-            headers: { 'x-user-id': '1' },
-            body: formDataToUpload
-          });
+          try {
+            const formDataToUpload = new FormData();
+            files.forEach(file => {
+              formDataToUpload.append('files', file);
+            });
+            
+            const uploadRes = await fetch(`http://localhost:8000/api/hoso/${updatedHoso.id}/attachments`, {
+              method: 'POST',
+              headers: { 'x-user-id': '1' },
+              body: formDataToUpload
+            });
+            
+            if (!uploadRes.ok) {
+              const errData = await uploadRes.json().catch(() => ({}));
+              alert(`Cập nhật hồ sơ thành công nhưng lỗi tải file đính kèm: ${errData.detail || 'Không xác định'}`);
+            }
+          } catch (uploadErr) {
+            console.error('Lỗi upload file:', uploadErr);
+            alert('Cập nhật hồ sơ thành công nhưng không thể tải lên tài liệu đính kèm do lỗi kết nối.');
+          }
         }
         
         onSuccess();
@@ -313,7 +323,28 @@ export default function EditHoSoModal({ isOpen, onClose, onSuccess, hosoData }: 
 
           {step === 4 && (
             <div className="space-y-5 animate-in slide-in-from-right-4 fade-in">
-              <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer" onClick={() => document.getElementById('file-upload')?.click()}>
+              <div 
+                className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer" 
+                onClick={() => document.getElementById('file-upload')?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.classList.add('border-blue-500', 'bg-blue-50');
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    setFiles(prev => [...prev, ...Array.from(e.dataTransfer.files!)]);
+                  }
+                }}
+              >
                 <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
                 <p className="text-sm font-medium text-slate-700">Nhấn hoặc kéo thả file vào đây để tải lên</p>
                 <p className="text-xs text-slate-500 mt-1">Hỗ trợ PDF, PNG, JPG, JPEG, DOCX...</p>
