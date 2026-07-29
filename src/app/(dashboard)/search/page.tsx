@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Filter, ChevronDown, ChevronRight, Eye, RefreshCw, Folder, Plus, Loader2, Download, Upload, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, ChevronDown, ChevronRight, ChevronLeft, Eye, RefreshCw, Folder, Plus, Loader2, Download, Upload, Edit, Trash2 } from 'lucide-react';
 import CreateHoSoModal from '@/components/hoso/CreateHoSoModal';
 import EditHoSoModal from '@/components/hoso/EditHoSoModal';
 
@@ -56,6 +56,10 @@ export default function SearchPage() {
   const [hosoToEdit, setHosoToEdit] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const pageSize = 50;
 
   // Fetch danh sách kho/kệ cho dropdown bộ lọc
   useEffect(() => {
@@ -75,13 +79,13 @@ export default function SearchPage() {
     fetchStorageTree();
   }, []);
 
-  const handleSearch = async () => {
+  const handleSearch = async (page: number = 1) => {
     try {
       setLoading(true);
       const bodyParams: any = {
         query: searchTerm || undefined,
-        limit: 50,
-        offset: 0
+        limit: pageSize,
+        offset: (page - 1) * pageSize
       };
 
       if (selectedCategories.length > 0) {
@@ -114,7 +118,15 @@ export default function SearchPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setResults(data);
+        // Fallback for older backend which might return array directly
+        if (Array.isArray(data)) {
+            setResults(data);
+            setTotalCount(data.length);
+        } else {
+            setResults(data.items || []);
+            setTotalCount(data.total || 0);
+        }
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Lỗi khi tra cứu hồ sơ:', error);
@@ -207,7 +219,7 @@ export default function SearchPage() {
   return (
     <div className="flex h-full bg-slate-50 overflow-hidden">
       {/* Sidebar Bộ Lọc Bên Trái */}
-      <div className="w-80 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full overflow-y-auto p-5 custom-scrollbar">
+      <div className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full overflow-y-auto custom-scrollbar transition-all duration-300 ${isSidebarOpen ? 'w-80 p-5' : 'w-0 p-0 border-none overflow-hidden opacity-0'}`}>
         {/* Tìm kiếm OCR */}
         <div className="mb-6">
           <div className="relative">
@@ -216,7 +228,7 @@ export default function SearchPage() {
               placeholder="Tìm kiếm hồ sơ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch(1)}
               className="w-full pl-10 pr-10 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -224,7 +236,7 @@ export default function SearchPage() {
             </div>
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
               <button 
-                onClick={handleSearch}
+                onClick={() => handleSearch(1)}
                 className="text-slate-400 hover:text-blue-500"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -347,7 +359,7 @@ export default function SearchPage() {
 
         {/* Button Áp dụng */}
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch(1)}
           className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all active:scale-[0.98] mt-auto"
         >
           Áp dụng bộ lọc
@@ -357,8 +369,17 @@ export default function SearchPage() {
       {/* Danh Sách Kết Quả Bên Phải */}
       <div className="flex-1 flex flex-col h-full overflow-hidden p-6">
         <div className="mb-4 flex items-center justify-between">
-          <div className="text-slate-600 text-sm font-medium">
-            Tìm thấy <span className="text-blue-600 font-bold">{results.length}</span> hồ sơ
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className={`p-2 rounded-lg transition-colors ${isSidebarOpen ? 'text-slate-500 hover:bg-slate-200' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'}`}
+              title="Ẩn/hiện bộ lọc"
+            >
+              <Filter className="w-5 h-5" />
+            </button>
+            <div className="text-slate-600 text-sm font-medium">
+              Tìm thấy <span className="text-blue-600 font-bold">{totalCount}</span> hồ sơ
+            </div>
           </div>
           <div className="flex gap-2">
             <button
@@ -511,6 +532,35 @@ export default function SearchPage() {
               </tbody>
             </table>
           </div>
+          {/* Phân trang */}
+          {totalCount > 0 && (
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+              <div className="text-sm text-slate-500">
+                Hiển thị từ <span className="font-medium text-slate-700">{((currentPage - 1) * pageSize) + 1}</span> đến{' '}
+                <span className="font-medium text-slate-700">{Math.min(currentPage * pageSize, totalCount)}</span> trong tổng số{' '}
+                <span className="font-medium text-slate-700">{totalCount}</span> hồ sơ
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSearch(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                  className="px-3 py-1.5 border border-slate-300 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:hover:bg-transparent"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <div className="text-sm font-medium text-slate-700 px-2">
+                  Trang {currentPage} / {Math.ceil(totalCount / pageSize)}
+                </div>
+                <button
+                  onClick={() => handleSearch(currentPage + 1)}
+                  disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                  className="px-3 py-1.5 border border-slate-300 rounded-md text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:hover:bg-transparent"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

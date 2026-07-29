@@ -11,14 +11,14 @@ from typing import List
 
 from app.dependencies import get_db, require_roles
 from app.models import HoSo, Attachments, ThuaDat, User
-from app.schemas import HoSoSearchRequest, HoSoResponse, HoSoCreate, HoSoUpdate, HoSoLineageResponse
+from app.schemas import HoSoSearchRequest, HoSoResponse, HoSoSearchResponse, HoSoCreate, HoSoUpdate, HoSoLineageResponse
 
 router = APIRouter(
     prefix="/api/hoso",
     tags=["HoSo Dossier Search"]
 )
 
-@router.post("/search", response_model=List[HoSoResponse])
+@router.post("/search", response_model=HoSoSearchResponse)
 def search_hoso(
     request: HoSoSearchRequest,
     db: Session = Depends(get_db),
@@ -74,9 +74,10 @@ def search_hoso(
             tsvector_expr.op('@@')(tsquery_expr)
         )
         
-    query = query.offset(request.offset).limit(request.limit)
+    total = query.count()
+    items = query.offset(request.offset).limit(request.limit).all()
     
-    return query.all()
+    return {"items": items, "total": total}
 
 @router.get("/{hoso_id}", response_model=HoSoResponse)
 def get_hoso(
@@ -143,27 +144,33 @@ def create_hoso(
             raise HTTPException(status_code=400, detail=f"Không tìm thấy hồ sơ gốc có mã '{request.mahoso_cha}'")
         idcha = parent_hoso.id
 
-    new_hoso = HoSo(
-        idcha=idcha,
-        mahoso=request.mahoso,
-        tenhoso=request.tenhoso,
-        loaihosoid=request.loaihosoid,
-        thuadatid=thuadat_id,
-        duanid=request.duanid,
-        kholuutruid=request.kholuutruid,
-        keluutruid=request.keluutruid,
-        tangluutruid=request.tangluutruid,
-        hopsoluutruid=request.hopsoluutruid,
-        chusohuu=request.chusohuu,
-        trangthai=request.trangthai,
-        ghichu=request.ghichu,
-        createdbyuserid=user_id
-    )
-    db.add(new_hoso)
-    db.commit()
-    db.refresh(new_hoso)
-    
-    return new_hoso
+    try:
+        new_hoso = HoSo(
+            idcha=idcha,
+            mahoso=request.mahoso,
+            tenhoso=request.tenhoso,
+            loaihosoid=request.loaihosoid,
+            thuadatid=thuadat_id,
+            duanid=request.duanid,
+            kholuutruid=request.kholuutruid,
+            keluutruid=request.keluutruid,
+            tangluutruid=request.tangluutruid,
+            hopsoluutruid=request.hopsoluutruid,
+            chusohuu=request.chusohuu,
+            trangthai=request.trangthai,
+            ghichu=request.ghichu,
+            createdbyuserid=user_id
+        )
+        db.add(new_hoso)
+        db.commit()
+        db.refresh(new_hoso)
+        return new_hoso
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Mã hồ sơ đã tồn tại hoặc vi phạm ràng buộc dữ liệu.")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi hệ thống: {str(e)}")
 
 @router.put("/{hoso_id}", response_model=HoSoResponse)
 def update_hoso(
