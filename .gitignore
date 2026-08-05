@@ -45,6 +45,7 @@ venv/
 backend/data/*
 !backend/data/README.md
 !backend/data/sample_parcels.geojson
+backend/uploads/
 
 # vercel
 .vercel
