@@ -27,6 +27,7 @@ class HoSoCreate(BaseModel):
     hopsoluutruid: Optional[int] = None
     
     chusohuu: Optional[str] = None
+    thon: Optional[str] = None
     trangthai: Optional[str] = "Hoàn thành"
     ghichu: Optional[str] = None
 
@@ -47,6 +48,7 @@ class HoSoUpdate(BaseModel):
     hopsoluutruid: Optional[int] = None
     
     chusohuu: Optional[str] = None
+    thon: Optional[str] = None
     trangthai: Optional[str] = None
     ghichu: Optional[str] = None
 
@@ -122,6 +124,7 @@ class HoSoResponse(BaseModel):
     tangluutruid: Optional[int] = None
     hopsoluutruid: Optional[int] = None
     chusohuu: Optional[str] = None
+    thon: Optional[str] = None
     trangthai: Optional[str] = None
     ghichu: Optional[str] = None
     attachments: List[AttachmentResponse] = Field(default_factory=list)

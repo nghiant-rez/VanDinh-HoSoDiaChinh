@@ -5,7 +5,7 @@ import os
 import shutil
 import pandas as pd
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from typing import List
 
@@ -61,7 +61,7 @@ def search_hoso(
     if request.hopsoluutruid:
         query = query.filter(HoSo.hopsoluutruid == request.hopsoluutruid)
         
-    # Full-Text Search trên nội dung OCR (Bảng Attachments) sử dụng PostgreSQL GIN Index
+    # Tìm kiếm theo Mã hồ sơ, Tên hồ sơ hoặc Nội dung OCR (Bảng Attachments)
     if request.query and request.query.strip():
         search_term = request.query.strip()
         
@@ -69,10 +69,14 @@ def search_hoso(
         tsvector_expr = func.to_tsvector('simple', Attachments.ocrextractedtext)
         tsquery_expr = func.websearch_to_tsquery('simple', search_term)
         
-        # JOIN bảng Attachments để tìm những Hồ Sơ có chứa file scan thỏa mãn
-        query = query.join(Attachments).filter(
-            tsvector_expr.op('@@')(tsquery_expr)
-        )
+        # JOIN bảng Attachments để tìm những Hồ Sơ có chứa file scan thỏa mãn hoặc tên/mã hồ sơ khớp
+        query = query.outerjoin(Attachments).filter(
+            or_(
+                HoSo.mahoso.ilike(f"%{search_term}%"),
+                HoSo.tenhoso.ilike(f"%{search_term}%"),
+                tsvector_expr.op('@@')(tsquery_expr)
+            )
+        ).distinct()
         
     total = query.count()
     items = query.offset(request.offset).limit(request.limit).all()
@@ -157,6 +161,7 @@ def create_hoso(
             tangluutruid=request.tangluutruid,
             hopsoluutruid=request.hopsoluutruid,
             chusohuu=request.chusohuu,
+            thon=request.thon,
             trangthai=request.trangthai,
             ghichu=request.ghichu,
             createdbyuserid=user_id
