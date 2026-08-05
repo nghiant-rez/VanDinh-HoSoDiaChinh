@@ -108,6 +108,7 @@ class HoSo(Base):
     # MapCoordinates omitted
     
     chusohuu = Column(String(200), nullable=True)
+    thon = Column(String(200), nullable=True)
     trangthai = Column(String(50), default="Hoàn thành")
     ghichu = Column(Text, nullable=True)
     

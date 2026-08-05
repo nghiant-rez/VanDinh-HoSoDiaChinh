@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.routers import auth, storage, hoso
-from app.routers import gis, dashboard
+from app.routers import gis, dashboard, sync
 from app.database import engine, Base
 from app import models  # ensure all models registered before create_all
 
@@ -29,6 +29,7 @@ app.include_router(storage.router)
 app.include_router(hoso.router)
 app.include_router(gis.router)
 app.include_router(dashboard.router)
+app.include_router(sync.router)
 
 app.mount("/static/uploads", StaticFiles(directory="uploads"), name="uploads")
 

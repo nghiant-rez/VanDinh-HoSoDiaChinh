@@ -59,6 +59,10 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedHosoIds, setSelectedHosoIds] = useState<number[]>([]);
+  const [exportingSync, setExportingSync] = useState(false);
+  const [importingSync, setImportingSync] = useState(false);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
   const pageSize = 50;
 
   // Fetch danh sách kho/kệ cho dropdown bộ lọc
@@ -192,6 +196,68 @@ export default function SearchPage() {
     } catch (error) {
       console.error('Lỗi khi xóa:', error);
       alert('Không thể kết nối máy chủ');
+    }
+  };
+
+  const handleExportSync = async () => {
+    try {
+      setExportingSync(true);
+      const res = await fetch('http://localhost:8000/api/sync/export-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': '1' },
+        body: JSON.stringify({ hoso_ids: selectedHosoIds })
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sync_data_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Lỗi khi xuất dữ liệu đồng bộ');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Không thể kết nối đến máy chủ');
+    } finally {
+      setExportingSync(false);
+    }
+  };
+
+  const handleImportSync = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportingSync(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("http://localhost:8000/api/sync/import-json", {
+          method: "POST",
+          headers: { 'x-user-id': '1' },
+          body: formData,
+      });
+      const result = await res.json();
+      
+      if (res.ok && result.success) {
+          let msg = `Đồng bộ thành công ${result.success_count} hồ sơ.\n`;
+          if (result.errors && result.errors.length > 0) {
+            msg += `\nLỗi:\n${result.errors.join('\n')}`;
+          }
+          alert(msg);
+          handleSearch();
+      } else {
+          alert("Lỗi khi đồng bộ: " + (result.detail || result.error || "Không xác định"));
+      }
+    } catch (error) {
+      console.error("Sync Import Error:", error);
+      alert("Không thể kết nối đến API Import Sync.");
+    } finally {
+      setImportingSync(false);
+      if (jsonInputRef.current) jsonInputRef.current.value = '';
     }
   };
 
@@ -398,6 +464,25 @@ export default function SearchPage() {
               {importing ? 'Đang import...' : 'Import Excel'}
             </button>
             <input type="file" hidden ref={fileInputRef} accept=".xlsx, .xls" onChange={handleImportExcel} />
+            
+            <button
+              onClick={handleExportSync}
+              disabled={exportingSync}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-purple-700 flex items-center transition-all disabled:opacity-50"
+            >
+              {exportingSync ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
+              Xuất JSON (Đồng bộ)
+            </button>
+            <button
+              onClick={() => jsonInputRef.current?.click()}
+              disabled={importingSync}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-indigo-700 flex items-center transition-all disabled:opacity-50"
+            >
+              {importingSync ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Upload className="w-4 h-4 mr-1" />}
+              Nhập JSON (Đồng bộ)
+            </button>
+            <input type="file" hidden ref={jsonInputRef} accept=".json" onChange={handleImportSync} />
+
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700 hover:shadow flex items-center transition-all active:scale-[0.98]"
@@ -413,6 +498,17 @@ export default function SearchPage() {
             <table className="w-full text-sm text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="px-6 py-4 font-semibold w-12">
+                    <input 
+                      type="checkbox" 
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                      checked={results.length > 0 && selectedHosoIds.length === results.length}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedHosoIds(results.map(r => r.id));
+                        else setSelectedHosoIds([]);
+                      }}
+                    />
+                  </th>
                   <th className="px-6 py-4 font-semibold">Mã hồ sơ</th>
                   <th className="px-6 py-4 font-semibold">Tên hồ sơ</th>
                   <th className="px-6 py-4 font-semibold">Chủ sở hữu</th>
@@ -449,6 +545,17 @@ export default function SearchPage() {
 
                     return (
                       <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <input 
+                            type="checkbox" 
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                            checked={selectedHosoIds.includes(row.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedHosoIds([...selectedHosoIds, row.id]);
+                              else setSelectedHosoIds(selectedHosoIds.filter(id => id !== row.id));
+                            }}
+                          />
+                        </td>
                         {/* Mã hồ sơ */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
