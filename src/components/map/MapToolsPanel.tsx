@@ -36,19 +36,22 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
   }, []);
 
   const handleImport = async (limitFiles: number = 0) => {
+    if (!sourcePath.trim()) {
+      setError('Vui lòng nhập đường dẫn thư mục dữ liệu');
+      return;
+    }
+
     setImporting(true);
     setError(null);
     setImportResult(null);
 
     try {
       // Step 1: Trigger import on backend
-      const importUrl = limitFiles > 0
-        ? `/api/maps/import?limit_files=${limitFiles}`
-        : '/api/maps/import';
-      const importResp = await fetch(importUrl, {
-        method: 'POST',
-        headers: { 'X-Confirm-Replace': GIS_IMPORT_CONFIRMATION },
-      });
+      let importUrl = `/api/maps/import?source_path=${encodeURIComponent(sourcePath)}`;
+      if (limitFiles > 0) {
+        importUrl += `&limit_files=${limitFiles}`;
+      }
+      const importResp = await fetch(importUrl, { method: 'POST' });
       if (!importResp.ok) {
         const err = await importResp.json();
         throw new Error(err.error || 'Import failed');
@@ -151,23 +154,21 @@ export function MapToolsPanel({ onImportComplete, parcelCount }: MapToolsPanelPr
             {/* Import tab */}
             {activeTab === 'import' && (
               <div className="p-4 space-y-4">
-                <div className="text-sm text-text-secondary">
+                <div className="text-sm text-text-secondary mb-2">
                   <Database className="w-4 h-4 inline mr-1.5" />
-                  Nhập dữ liệu thửa đất từ{' '}
-                  <span className="font-mono text-xs bg-bg-main px-1.5 py-0.5 rounded">
-                    {sourcePath || '(chưa cấu hình)'}
-                  </span>
+                  Nhập dữ liệu thửa đất
                 </div>
-
-                {!sourcePath && (
-                  <div className="bg-warning/5 border border-warning/20 rounded-lg p-3 text-xs text-text-secondary">
-                    Chưa tìm thấy thư mục dữ liệu. Tạo file{' '}
-                    <span className="font-mono">backend/.env</span> với dòng:{' '}
-                    <span className="font-mono block mt-1 bg-bg-main px-2 py-1 rounded">
-                      DGN_SOURCE_PATH=&quot;đường/dẫn/tới/Ban Do&quot;
-                    </span>
-                  </div>
-                )}
+                
+                <div>
+                  <label className="block text-xs font-medium text-text-secondary mb-1">Thư mục chứa dữ liệu (đường dẫn tuyệt đối)</label>
+                  <input 
+                    type="text" 
+                    value={sourcePath} 
+                    onChange={(e) => setSourcePath(e.target.value)} 
+                    placeholder="VD: D:\DuAn\Data" 
+                    className="w-full p-2 border border-border rounded-lg text-sm bg-bg-main outline-none focus:ring-1 focus:ring-primary text-text-primary"
+                  />
+                </div>
 
                 <div className="text-xs text-text-secondary bg-bg-main rounded-lg p-3 space-y-1">
                   <div>80 file dc*.txt (bản đồ địa chính)</div>

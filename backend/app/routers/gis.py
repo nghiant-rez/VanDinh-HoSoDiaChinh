@@ -49,7 +49,7 @@ def import_status(
 @router.post("/import", response_model=ImportResponse)
 def import_parcels(
     limit_files: int = 0,
-    x_confirm_replace: str | None = Header(None, alias="X-Confirm-Replace"),
+    source_path: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN"])),
 ):
@@ -62,7 +62,7 @@ def import_parcels(
             detail=f"Missing destructive import confirmation: {GIS_IMPORT_CONFIRMATION}",
         )
     try:
-        result = import_all_parcels(db, limit_files=limit_files)
+        result = import_all_parcels(db, limit_files=limit_files, source_path=source_path)
         logger.info(
             "Imported %d parcels (%d with polygons) from %d TXT + %d DGN files",
             result.total_parcels, result.parcels_with_polygon,

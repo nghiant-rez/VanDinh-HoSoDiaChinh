@@ -111,6 +111,7 @@ class HoSo(Base):
     thon = Column(String(200), nullable=True)
     trangthai = Column(String(50), default="Hoàn thành")
     ghichu = Column(Text, nullable=True)
+    nam = Column(Integer, nullable=True)
     
     createdbyuserid = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     

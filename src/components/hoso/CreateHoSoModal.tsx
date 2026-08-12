@@ -38,11 +38,11 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
     dientich: '',
     kholuutruid: '',
     keluutruid: '',
-    tangluutruid: '',
     hopsoluutruid: '',
     mahoso_cha: '',
     thon: '',
-    ghichu: ''
+    ghichu: '',
+    nam: ''
   });
 
   useEffect(() => {
@@ -58,14 +58,14 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
         trangthai: 'Hoàn thành',
         tobando: '',
         sothua: '',
-        dientich: '',
         kholuutruid: '',
         keluutruid: '',
         tangluutruid: '',
         hopsoluutruid: '',
         mahoso_cha: '',
         thon: '',
-        ghichu: ''
+        ghichu: '',
+        nam: ''
       });
     }
   }, [isOpen]);
@@ -106,12 +106,12 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
       if (formData.sothua) bodyParams.sothua = formData.sothua;
       if (formData.dientich) bodyParams.dientich = Number(formData.dientich);
       if (formData.kholuutruid) bodyParams.kholuutruid = Number(formData.kholuutruid);
-      if (formData.keluutruid) bodyParams.keluutruid = Number(formData.keluutruid);
       if (formData.tangluutruid) bodyParams.tangluutruid = Number(formData.tangluutruid);
       if (formData.hopsoluutruid) bodyParams.hopsoluutruid = Number(formData.hopsoluutruid);
       if (formData.mahoso_cha) bodyParams.mahoso_cha = formData.mahoso_cha;
       if (formData.thon) bodyParams.thon = formData.thon;
       if (formData.ghichu) bodyParams.ghichu = formData.ghichu;
+      if (formData.nam) bodyParams.nam = Number(formData.nam);
 
       const res = await fetch('http://localhost:8000/api/hoso', {
         method: 'POST',
@@ -248,6 +248,10 @@ export default function CreateHoSoModal({ isOpen, onClose, onSuccess }: CreateHo
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Năm</label>
+                  <input type="number" name="nam" value={formData.nam} onChange={handleInputChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Ví dụ: 2023" />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Thôn</label>
                   <select name="thon" value={formData.thon} onChange={handleInputChange} className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
