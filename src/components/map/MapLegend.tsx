@@ -61,6 +61,19 @@ export function MapLegend({ parcelCount }: MapLegendProps) {
               <span>{type.label}</span>
             </div>
           ))}
+          <div className="mt-2 space-y-1.5 border-t border-border pt-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary/70">
+              Độ tin cậy ranh
+            </div>
+            <div className="flex items-center gap-2 text-xs text-text-secondary">
+              <span className="w-5 border-t-2 border-slate-700" />
+              <span>Ranh DGN đã phân loại</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-text-secondary">
+              <span className="w-5 border-t-2 border-dashed border-danger" />
+              <span>Ước tính hoặc chưa xác minh</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

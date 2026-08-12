@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'X-User-Id': session.userId.toString(),
+        'X-Confirm-Replace': confirmation,
       },
     });
 

@@ -104,6 +104,18 @@ digital-archive-map-system/
 2. **Read `docs/security.md`** — check open issues for files you're touching
 3. **Coordinate in team chat** before editing `backend/app/dependencies.py` or `backend/app/config.py` (conflict hotspots)
 
+## Context Maintenance
+
+After completing a material task, audit project context and update only affected canonical files before commit/push:
+
+- Architecture or system design changed → `docs/architecture.md`
+- Feature status or ownership changed → `docs/feature-ownership.md`
+- Security issue or status changed → `docs/security.md`
+- User-visible behavior or code changed → `docs/changelog.md`
+- Agent workflow or project instructions changed → `AGENTS.md`
+
+If no context file needs changes, state `Context unchanged` in the handoff. Do not create session-only recap noise or edit docs merely because a task/session ended.
+
 ## Version Control
 
 ### Branch Strategy

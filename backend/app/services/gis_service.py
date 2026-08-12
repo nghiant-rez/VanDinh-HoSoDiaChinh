@@ -42,6 +42,7 @@ class ParcelRecord:
     lon: float = 0.0
     lat: float = 0.0
     polygon_geojson: Optional[str] = None
+    geometry_source: str = "centroid_only"
 
 
 @dataclass
@@ -265,6 +266,7 @@ def match_parcels_to_polygons(
         if pi in assigned_parcels or gi in assigned_polys:
             continue
         parcels[pi].polygon_geojson = json.dumps(polygons[gi])
+        parcels[pi].geometry_source = "dgn_polygon"
         assigned_parcels.add(pi)
         assigned_polys.add(gi)
 
@@ -289,6 +291,7 @@ def match_parcels_to_polygons(
             ]],
         }
         parcel.polygon_geojson = json.dumps(poly)
+        parcel.geometry_source = "area_estimate"
 
 
 def scan_all_txt_files(source_path: str = None) -> list[str]:
@@ -331,6 +334,7 @@ def ensure_geometry_columns(db: Session) -> None:
 
 def import_all_parcels(db: Session, limit_files: int = 0, source_path: str = None) -> ImportResult:
     ensure_geometry_columns(db)
+    provenance_enabled = has_geometry_source_column(db)
 
     # Nullify FK references then clear parcels in single transaction
     db.execute(text("UPDATE hoso SET thuadatid = NULL WHERE thuadatid IS NOT NULL"))
@@ -372,18 +376,22 @@ def import_all_parcels(db: Session, limit_files: int = 0, source_path: str = Non
     result.total_parcels = len(all_parcels)
     result.parcels_with_polygon = sum(1 for p in all_parcels if p.polygon_geojson)
 
+    source_column = ", geometry_source" if provenance_enabled else ""
+    source_value = ", :geometry_source" if provenance_enabled else ""
+    insert_query = text(
+        "INSERT INTO thuadat (tobando, sothua, dientich, loai_dat, mdsd2003, "
+        f"ten_chu, dia_chi, xu_dong, geom, centroid{source_column}) "
+        "VALUES (:tobando, :sothua, :dientich, :loai_dat, :mdsd2003, "
+        ":ten_chu, :dia_chi, :xu_dong, "
+        "CASE WHEN :geom_json IS NOT NULL "
+        "  THEN ST_SetSRID(ST_GeomFromGeoJSON(:geom_json), 4326) ELSE NULL END, "
+        f"ST_SetSRID(ST_MakePoint(:lon, :lat), 4326){source_value})"
+    )
+
     for parcel in all_parcels:
         if parcel.lon == 0 or parcel.lat == 0:
             continue
-        db.execute(text(
-            "INSERT INTO thuadat (tobando, sothua, dientich, loai_dat, mdsd2003, "
-            "ten_chu, dia_chi, xu_dong, geom, centroid) "
-            "VALUES (:tobando, :sothua, :dientich, :loai_dat, :mdsd2003, "
-            ":ten_chu, :dia_chi, :xu_dong, "
-            "CASE WHEN :geom_json IS NOT NULL "
-            "  THEN ST_SetSRID(ST_GeomFromGeoJSON(:geom_json), 4326) ELSE NULL END, "
-            "ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))"
-        ), {
+        db.execute(insert_query, {
             "tobando": parcel.to_ban_do,
             "sothua": str(parcel.so_thua),
             "dientich": parcel.dien_tich,
@@ -395,6 +403,7 @@ def import_all_parcels(db: Session, limit_files: int = 0, source_path: str = Non
             "geom_json": parcel.polygon_geojson,
             "lon": parcel.lon,
             "lat": parcel.lat,
+            "geometry_source": parcel.geometry_source,
         })
 
     db.commit()
@@ -444,10 +453,19 @@ def get_parcels_geojson(
         params["tobando"] = to_ban_do
 
     where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+    if has_geometry_source_column(db):
+        source_expression = (
+            "COALESCE(geometry_source, "
+            "CASE WHEN geom IS NOT NULL THEN 'untracked_polygon' ELSE 'centroid_only' END)"
+        )
+    else:
+        source_expression = (
+            "CASE WHEN geom IS NOT NULL THEN 'untracked_polygon' ELSE 'centroid_only' END"
+        )
 
     query = text(
         f"SELECT id, tobando, sothua, dientich, loai_dat, mdsd2003, "
-        f"ten_chu, dia_chi, xu_dong, "
+        f"ten_chu, dia_chi, xu_dong, {source_expression} AS geometry_source, "
         f"ST_AsGeoJSON(COALESCE(geom, centroid)) as geojson "
         f"FROM thuadat WHERE {where_clause} LIMIT :limit"
     )
@@ -473,6 +491,7 @@ def get_parcels_geojson(
                 "ten_chu": row.ten_chu,
                 "dia_chi": row.dia_chi,
                 "xu_dong": row.xu_dong,
+                "geometry_source": row.geometry_source,
             },
         })
 
