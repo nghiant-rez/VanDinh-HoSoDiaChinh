@@ -57,3 +57,7 @@ opencode.json
 next-env.d.ts
 
 pm2.config.js
+
+# pdf
+*.pdf
+
