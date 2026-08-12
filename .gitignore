@@ -58,7 +58,7 @@ next-env.d.ts
 
 pm2.config.js
 
-# pdf & executables
+# pdf
 *.pdf
-*.exe
+
 
