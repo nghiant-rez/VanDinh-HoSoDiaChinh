@@ -291,8 +291,8 @@ def match_parcels_to_polygons(
         parcel.polygon_geojson = json.dumps(poly)
 
 
-def scan_all_txt_files() -> list[str]:
-    txt_dir = settings.dgn_source_path
+def scan_all_txt_files(source_path: str = None) -> list[str]:
+    txt_dir = source_path if source_path else settings.dgn_source_path
     files = glob.glob(os.path.join(txt_dir, "dc*.txt"))
     files += glob.glob(os.path.join(txt_dir, "DC*.txt"))
     seen = set()
@@ -329,7 +329,7 @@ def ensure_geometry_columns(db: Session) -> None:
     db.commit()
 
 
-def import_all_parcels(db: Session, limit_files: int = 0) -> ImportResult:
+def import_all_parcels(db: Session, limit_files: int = 0, source_path: str = None) -> ImportResult:
     ensure_geometry_columns(db)
 
     # Nullify FK references then clear parcels in single transaction
@@ -337,7 +337,7 @@ def import_all_parcels(db: Session, limit_files: int = 0) -> ImportResult:
     db.execute(text("DELETE FROM thuadat"))
     # ponytail: no intermediate commit — whole import is atomic
 
-    txt_files = scan_all_txt_files()
+    txt_files = scan_all_txt_files(source_path)
     if limit_files > 0:
         txt_files = txt_files[:limit_files]
     result = ImportResult(total_txt_files=len(txt_files))

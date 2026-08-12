@@ -48,6 +48,7 @@ def import_status(
 @router.post("/import", response_model=ImportResponse)
 def import_parcels(
     limit_files: int = 0,
+    source_path: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(["ADMIN"])),
 ):
@@ -55,7 +56,7 @@ def import_parcels(
     if limit_files < 0:
         raise HTTPException(status_code=400, detail="limit_files must be >= 0")
     try:
-        result = import_all_parcels(db, limit_files=limit_files)
+        result = import_all_parcels(db, limit_files=limit_files, source_path=source_path)
         logger.info(
             "Imported %d parcels (%d with polygons) from %d TXT + %d DGN files",
             result.total_parcels, result.parcels_with_polygon,

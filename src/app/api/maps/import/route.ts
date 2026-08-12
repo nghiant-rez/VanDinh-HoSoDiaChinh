@@ -8,9 +8,15 @@ export async function POST(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const limitFiles = searchParams.get('limit_files') || '0';
+  const sourcePath = searchParams.get('source_path') || '';
 
   try {
-    const resp = await fetch(`${BACKEND_URL}/api/gis/import?limit_files=${limitFiles}`, {
+    let importUrl = `${BACKEND_URL}/api/gis/import?limit_files=${limitFiles}`;
+    if (sourcePath) {
+      importUrl += `&source_path=${encodeURIComponent(sourcePath)}`;
+    }
+
+    const resp = await fetch(importUrl, {
       method: 'POST',
       headers: {
         'X-User-Id': session.userId.toString(),

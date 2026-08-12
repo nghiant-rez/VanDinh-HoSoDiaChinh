@@ -30,6 +30,7 @@ class HoSoCreate(BaseModel):
     thon: Optional[str] = None
     trangthai: Optional[str] = "Hoàn thành"
     ghichu: Optional[str] = None
+    nam: Optional[int] = None
 
 class HoSoUpdate(BaseModel):
     mahoso_cha: Optional[str] = None
@@ -51,6 +52,7 @@ class HoSoUpdate(BaseModel):
     thon: Optional[str] = None
     trangthai: Optional[str] = None
     ghichu: Optional[str] = None
+    nam: Optional[int] = None
 
 class HoSoSearchRequest(BaseModel):
     query: Optional[str] = None # For OCR Full-Text Search
@@ -63,6 +65,7 @@ class HoSoSearchRequest(BaseModel):
     keluutruid: Optional[int] = None
     tangluutruid: Optional[int] = None
     hopsoluutruid: Optional[int] = None
+    nam: Optional[int] = None
     limit: int = 50
     offset: int = 0
 
@@ -127,6 +130,7 @@ class HoSoResponse(BaseModel):
     thon: Optional[str] = None
     trangthai: Optional[str] = None
     ghichu: Optional[str] = None
+    nam: Optional[int] = None
     attachments: List[AttachmentResponse] = Field(default_factory=list)
     thua_dat: Optional[ThuaDatResponse] = None
     kho_luu_tru: Optional[KhoLuuTruSimple] = None

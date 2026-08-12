@@ -50,6 +50,10 @@ def search_hoso(
     # Lọc theo chủ sở hữu
     if request.chusohuu:
         query = query.filter(HoSo.chusohuu.ilike(f"%{request.chusohuu}%"))
+        
+    # Lọc theo Năm
+    if request.nam:
+        query = query.filter(HoSo.nam == request.nam)
             
     # Lọc theo vị trí lưu trữ (Drill-down)
     if request.kholuutruid:
@@ -164,6 +168,7 @@ def create_hoso(
             thon=request.thon,
             trangthai=request.trangthai,
             ghichu=request.ghichu,
+            nam=request.nam,
             createdbyuserid=user_id
         )
         db.add(new_hoso)
